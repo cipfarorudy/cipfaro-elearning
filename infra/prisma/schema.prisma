@@ -8,44 +8,53 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
+  id           String   @id @default(uuid()) @db.Uuid
   email        String   @unique
-  passwordHash String
-  firstName    String?
-  lastName     String?
+  passwordHash String   @map("password_hash")
+  firstName    String?  @map("first_name")
+  lastName     String?  @map("last_name")
   phone        String?
-  isActive     Boolean  @default(true)
+  isActive     Boolean  @default(true) @map("is_active")
   roles        UserRole[]
   enrollments  Enrollment[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  auditLogs    AuditLog[]
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
 }
 
 model Role {
-  id   Int    @id @default(autoincrement())
-  code String @unique // ADMIN | FORMATEUR | STAGIAIRE | OPCO
+  id    Int    @id @default(autoincrement())
+  code  String @unique // ADMIN | FORMATEUR | STAGIAIRE | OPCO
   users UserRole[]
+
+  @@map("roles")
 }
 
 model UserRole {
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  roleId Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id") @db.Uuid
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId Int    @map("role_id")
+
   @@id([userId, roleId])
+  @@map("user_roles")
 }
 
 model Training {
-  id             String   @id @default(uuid())
-  title          String
-  rncpCode       String?
-  blocCode       String?
-  objectives     String?
-  prerequisites  String?
-  durationHours  Int
-  modality       Modality
-  sessions       Session[]
-  createdAt      DateTime @default(now())
+  id            String   @id @default(uuid()) @db.Uuid
+  title         String
+  rncpCode      String?  @map("rncp_code")
+  blocCode      String?  @map("bloc_code")
+  objectives    String?
+  prerequisites String?
+  durationHours Int      @map("duration_hours")
+  modality      Modality
+  sessions      Session[]
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("trainings")
 }
 
 enum Modality {
@@ -55,31 +64,37 @@ enum Modality {
 }
 
 model Session {
-  id          String    @id @default(uuid())
-  training    Training  @relation(fields: [trainingId], references: [id], onDelete: Cascade)
-  trainingId  String
-  title       String
-  startDate   DateTime?
-  endDate     DateTime?
-  hoursPerDay Int?
+  id          String      @id @default(uuid()) @db.Uuid
+  training    Training    @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  trainingId  String      @map("training_id") @db.Uuid
+  title       String?
+  startDate   DateTime?   @map("start_date") @db.Date
+  endDate     DateTime?   @map("end_date") @db.Date
+  hoursPerDay Int?        @map("hours_per_day")
   location    String?
   capacity    Int?
   modules     Module[]
   enrollments Enrollment[]
-  createdAt   DateTime  @default(now())
+  auditLogs   AuditLog[]
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  @@map("sessions")
 }
 
 model Enrollment {
-  id        String  @id @default(uuid())
-  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sessionId String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  status    Status  @default(active)
-  cmi       ScormCmi[]
-  attendance Attendance[]
-  xapi      XapiStatement[]
-  createdAt DateTime @default(now())
+  id           String         @id @default(uuid()) @db.Uuid
+  session      Session        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId    String         @map("session_id") @db.Uuid
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String         @map("user_id") @db.Uuid
+  status       Status         @default(active)
+  cmi          ScormCmi[]
+  attendance   Attendance[]
+  xapi         XapiStatement[]
+  auditLogs    AuditLog[]
+  createdAt    DateTime       @default(now()) @map("created_at")
+
+  @@map("enrollments")
 }
 
 enum Status {
@@ -90,14 +105,18 @@ enum Status {
 }
 
 model Module {
-  id             String   @id @default(uuid())
-  session        Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sessionId      String
-  title          String
-  type           ModuleType
-  orderIndex     Int      @default(0)
-  expectedMinutes Int?
-  scorm          ScormPackage?
+  id              String         @id @default(uuid()) @db.Uuid
+  session         Session        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId       String         @map("session_id") @db.Uuid
+  title           String
+  type            ModuleType
+  orderIndex      Int            @default(0) @map("order_index")
+  expectedMinutes Int?           @map("expected_minutes")
+  scorm           ScormPackage?
+  cmi             ScormCmi[]
+  auditLogs       AuditLog[]
+
+  @@map("modules")
 }
 
 enum ModuleType {
@@ -109,39 +128,45 @@ enum ModuleType {
 }
 
 model ScormPackage {
-  id         String  @id @default(uuid())
-  module     Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  moduleId   String  @unique
-  s3Key      String
-  launchUrl  String
-  scoId      String?
-  version    String  @default("1.2")
-  importedAt DateTime @default(now())
+  id         String   @id @default(uuid()) @db.Uuid
+  module     Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId   String   @unique @map("module_id") @db.Uuid
+  s3Key      String   @map("s3_key")
+  launchUrl  String   @map("launch_url")
+  scoId      String?  @map("sco_id")
+  version    String   @default("1.2")
+  importedAt DateTime @default(now()) @map("imported_at")
+
+  @@map("scorm_packages")
 }
 
 model ScormCmi {
-  id                     String   @id @default(uuid())
-  enrollment Enrollment  @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  enrollmentId String
-  module     Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  moduleId   String
-  lessonStatus  String?
-  scoreRaw      Float?
-  totalTime     String? // HH:MM:SS
-  suspendData   String?
-  lastCommit    DateTime @default(now())
+  id                     String     @id @default(uuid()) @db.Uuid
+  enrollment             Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId           String     @map("enrollment_id") @db.Uuid
+  module                 Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId               String     @map("module_id") @db.Uuid
+  cmiCoreLessonStatus    String?    @map("cmi_core_lesson_status")
+  cmiCoreScoreRaw        Decimal?   @map("cmi_core_score_raw") @db.Decimal(5,2)
+  cmiCoreTotalTime       String?    @map("cmi_core_total_time") // format HH:MM:SS
+  cmiSuspendData         String?    @map("cmi_suspend_data")
+  lastCommit             DateTime   @default(now()) @map("last_commit")
+
   @@unique([enrollmentId, moduleId])
+  @@map("scorm_cmi")
 }
 
 model Attendance {
-  id           String   @id @default(uuid())
-  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  enrollmentId String
-  date         DateTime
-  startTime    DateTime
-  endTime      DateTime
+  id           String           @id @default(uuid()) @db.Uuid
+  enrollment   Enrollment       @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String           @map("enrollment_id") @db.Uuid
+  date         DateTime         @db.Date
+  startTime    DateTime         @map("start_time") @db.Time
+  endTime      DateTime         @map("end_time") @db.Time
   method       AttendanceMethod @default(signature)
-  evidenceUrl  String?
+  evidenceUrl  String?          @map("evidence_url")
+
+  @@map("attendance")
 }
 
 enum AttendanceMethod {
@@ -152,31 +177,34 @@ enum AttendanceMethod {
 }
 
 model XapiStatement {
-  id           String   @id @default(uuid())
+  id           String      @id @default(uuid()) @db.Uuid
   actor        Json
   verb         Json
   object       Json
   result       Json?
   context      Json?
-  timestamp    DateTime @default(now())
-  stored       DateTime @default(now())
-  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id])
-  enrollmentId String?
+  timestamp    DateTime    @default(now())
+  stored       DateTime    @default(now())
+  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  enrollmentId String?     @map("enrollment_id") @db.Uuid
+
+  @@map("xapi_statements")
 }
 
-
 model AuditLog {
-  id           String   @id @default(uuid())
+  id           String      @id @default(uuid()) @db.Uuid
   event        String
-  user         User?    @relation(fields: [userId], references: [id])
-  userId       String?
-  session      Session? @relation(fields: [sessionId], references: [id])
-  sessionId    String?
-  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id])
-  enrollmentId String?
-  module       Module?  @relation(fields: [moduleId], references: [id])
-  moduleId     String?
+  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId       String?     @map("user_id") @db.Uuid
+  session      Session?    @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  sessionId    String?     @map("session_id") @db.Uuid
+  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  enrollmentId String?     @map("enrollment_id") @db.Uuid
+  module       Module?     @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  moduleId     String?     @map("module_id") @db.Uuid
   ip           String?
   meta         Json?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  @@map("audit_logs")
 }

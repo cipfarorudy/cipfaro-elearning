@@ -1,26 +1,591 @@
 <!doctype html>
 <html lang="fr">
-<head><meta charset="utf-8"><title>SCORM Demo</title></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIPFARO - Module de Formation E-learning</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      max-width: 800px;
+      width: 90%;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      color: #2c3e50;
+      margin-bottom: 0.5rem;
+      font-size: 2rem;
+    }
+
+    .header p {
+      color: #7f8c8d;
+      font-size: 1.1rem;
+    }
+
+    .progress-container {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background: #e9ecef;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #28a745, #20c997);
+      border-radius: 5px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 500;
+      color: #495057;
+    }
+
+    .lesson-content {
+      margin-bottom: 2rem;
+    }
+
+    .lesson-step {
+      display: none;
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid #667eea;
+    }
+
+    .lesson-step.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .lesson-step h3 {
+      color: #2c3e50;
+      margin-bottom: 1rem;
+    }
+
+    .lesson-step p {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 120px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-panel {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .status-item {
+      text-align: center;
+      padding: 0.5rem;
+    }
+
+    .status-label {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 0.25rem;
+    }
+
+    .status-value {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #2c3e50;
+    }
+
+    .debug-panel {
+      background: #2c3e50;
+      color: #ecf0f1;
+      border-radius: 10px;
+      padding: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+
+    .debug-toggle {
+      background: #34495e;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .quiz-container {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .quiz-question {
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: #856404;
+    }
+
+    .quiz-options {
+      list-style: none;
+    }
+
+    .quiz-options li {
+      margin: 0.5rem 0;
+    }
+
+    .quiz-options input[type="radio"] {
+      margin-right: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem;
+        margin: 1rem;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
 <body>
-  <h1>SCORM Demo</h1>
-  <button id="start">Initialize</button>
-  <button id="complete">Complete + Commit</button>
+  <div class="container">
+    <div class="header">
+      <h1>🎓 Formation E-learning</h1>
+      <p>Module de démonstration SCORM 1.2</p>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text">
+        <span>Progression</span>
+        <span id="progressText">0%</span>
+      </div>
+    </div>
+
+    <div class="status-panel">
+      <div class="status-grid">
+        <div class="status-item">
+          <div class="status-label">Statut</div>
+          <div class="status-value" id="statusValue">Non commencé</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">Score</div>
+          <div class="status-value" id="scoreValue">0/100</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">Temps passé</div>
+          <div class="status-value" id="timeValue">00:00:00</div>
+        </div>
+        <div class="status-item">
+          <div class="status-label">Étape</div>
+          <div class="status-value" id="stepValue">0/5</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lesson-content" id="lessonContent">
+      <div class="lesson-step active" data-step="0">
+        <h3>📚 Introduction</h3>
+        <p>Bienvenue dans ce module de formation e-learning ! Cette démonstration vous présente les fonctionnalités de base d'un contenu SCORM 1.2.</p>
+        <p>Vous allez apprendre comment les données de progression sont suivies et transmises au système de gestion de l'apprentissage (LMS).</p>
+      </div>
+
+      <div class="lesson-step" data-step="1">
+        <h3>🚀 Démarrage du module</h3>
+        <p>Lorsque vous démarrez un module SCORM, l'API LMS est initialisée et la communication commence.</p>
+        <p>Le statut passe de "Non commencé" à "En cours" et le timer démarre automatiquement.</p>
+      </div>
+
+      <div class="lesson-step" data-step="2">
+        <h3>📊 Suivi de la progression</h3>
+        <p>Votre progression dans le module est suivie en temps réel. Chaque interaction est enregistrée.</p>
+        <p>Le LMS reçoit des informations sur votre temps passé, votre progression et vos résultats.</p>
+      </div>
+
+      <div class="lesson-step" data-step="3">
+        <h3>🎯 Quiz d'évaluation</h3>
+        <div class="quiz-container">
+          <div class="quiz-question">Que signifie l'acronyme SCORM ?</div>
+          <ul class="quiz-options">
+            <li><input type="radio" name="quiz" value="0" id="q1"> <label for="q1">Standard Content Object Reference Model</label></li>
+            <li><input type="radio" name="quiz" value="1" id="q2"> <label for="q2">Sharable Content Object Reference Model</label></li>
+            <li><input type="radio" name="quiz" value="2" id="q3"> <label for="q3">Simple Content Object Reference Model</label></li>
+          </ul>
+        </div>
+        <p>Sélectionnez la bonne réponse et continuez pour voir votre score mis à jour.</p>
+      </div>
+
+      <div class="lesson-step" data-step="4">
+        <h3>✅ Finalisation</h3>
+        <p>Félicitations ! Vous avez terminé ce module de démonstration.</p>
+        <p>Votre progression sera automatiquement sauvegardée dans le LMS. Vous pouvez maintenant finaliser le module.</p>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="initBtn">🚀 Initialiser</button>
+      <button class="btn btn-secondary" id="prevBtn" disabled>⬅️ Précédent</button>
+      <button class="btn btn-secondary" id="nextBtn" disabled>Suivant ➡️</button>
+      <button class="btn btn-success" id="completeBtn" disabled>✅ Terminer</button>
+    </div>
+
+    <button class="debug-toggle" onclick="toggleDebug()">🔧 Console de débogage</button>
+    <div class="debug-panel" id="debugPanel" style="display: none;"></div>
+  </div>
+
   <script>
+    // Configuration et variables globales
     const API = window.parent.API || window.API;
-    document.getElementById('start').onclick = () => {
-      console.log('LMSInitialize:', API.LMSInitialize(''));
-      API.LMSSetValue('cmi.core.lesson_status', 'incomplete');
-      API.LMSSetValue('cmi.core.score.raw', '50');
-      API.LMSSetValue('cmi.core.total_time', '00:10:00');
-      alert('Initialized');
+    let currentStep = 0;
+    let startTime = null;
+    let isInitialized = false;
+    let score = 0;
+    let quizAnswer = null;
+    
+    // Éléments DOM
+    const elements = {
+      progressFill: document.getElementById('progressFill'),
+      progressText: document.getElementById('progressText'),
+      statusValue: document.getElementById('statusValue'),
+      scoreValue: document.getElementById('scoreValue'),
+      timeValue: document.getElementById('timeValue'),
+      stepValue: document.getElementById('stepValue'),
+      initBtn: document.getElementById('initBtn'),
+      prevBtn: document.getElementById('prevBtn'),
+      nextBtn: document.getElementById('nextBtn'),
+      completeBtn: document.getElementById('completeBtn'),
+      lessonSteps: document.querySelectorAll('.lesson-step'),
+      debugPanel: document.getElementById('debugPanel')
     };
-    document.getElementById('complete').onclick = async () => {
-      API.LMSSetValue('cmi.core.lesson_status', 'completed');
-      API.LMSSetValue('cmi.core.score.raw', '85');
-      API.LMSSetValue('cmi.core.total_time', '00:30:00');
-      console.log('LMSCommit:', await API.LMSCommit(''));
-      alert('Committed');
+
+    // Fonctions de débogage
+    function debugLog(message) {
+      console.log(message);
+      const timestamp = new Date().toLocaleTimeString();
+      elements.debugPanel.innerHTML += `[${timestamp}] ${message}\n`;
+      elements.debugPanel.scrollTop = elements.debugPanel.scrollHeight;
+    }
+
+    function toggleDebug() {
+      const panel = elements.debugPanel;
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Gestion du temps
+    function updateTimer() {
+      if (!startTime || !isInitialized) return;
+      
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+      const minutes = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+      const seconds = (elapsed % 60).toString().padStart(2, '0');
+      
+      const timeString = `${hours}:${minutes}:${seconds}`;
+      elements.timeValue.textContent = timeString;
+      
+      if (API && API.LMSSetValue) {
+        API.LMSSetValue('cmi.core.session_time', timeString);
+      }
+    }
+
+    // Mise à jour de l'interface
+    function updateProgress() {
+      const progress = Math.round((currentStep / 4) * 100);
+      elements.progressFill.style.width = `${progress}%`;
+      elements.progressText.textContent = `${progress}%`;
+      elements.stepValue.textContent = `${currentStep}/5`;
+      
+      if (API && API.LMSSetValue) {
+        API.LMSSetValue('cmi.core.lesson_location', currentStep.toString());
+        debugLog(`📍 Location mise à jour: ${currentStep}`);
+      }
+    }
+
+    function updateStatus(status) {
+      elements.statusValue.textContent = status;
+      if (API && API.LMSSetValue) {
+        const scormStatus = {
+          'Non commencé': 'not attempted',
+          'En cours': 'incomplete',
+          'Terminé': 'completed',
+          'Réussi': 'passed',
+          'Échoué': 'failed'
+        }[status] || 'incomplete';
+        
+        API.LMSSetValue('cmi.core.lesson_status', scormStatus);
+        debugLog(`📊 Statut mis à jour: ${scormStatus}`);
+      }
+    }
+
+    function updateScore(newScore) {
+      score = newScore;
+      elements.scoreValue.textContent = `${score}/100`;
+      if (API && API.LMSSetValue) {
+        API.LMSSetValue('cmi.core.score.raw', score.toString());
+        API.LMSSetValue('cmi.core.score.min', '0');
+        API.LMSSetValue('cmi.core.score.max', '100');
+        debugLog(`🎯 Score mis à jour: ${score}/100`);
+      }
+    }
+
+    // Navigation
+    function showStep(step) {
+      elements.lessonSteps.forEach((stepElement, index) => {
+        stepElement.classList.toggle('active', index === step);
+      });
+      
+      currentStep = step;
+      updateProgress();
+      updateButtons();
+      
+      // Mise à jour automatique du score selon l'étape
+      if (step === 1) updateScore(25);
+      if (step === 2) updateScore(50);
+      if (step === 3) updateScore(75);
+    }
+
+    function updateButtons() {
+      elements.prevBtn.disabled = currentStep === 0 || !isInitialized;
+      elements.nextBtn.disabled = currentStep >= 4 || !isInitialized;
+      elements.completeBtn.disabled = currentStep < 4 || !isInitialized;
+    }
+
+    // Gestion du quiz
+    function checkQuizAnswer() {
+      const selectedAnswer = document.querySelector('input[name="quiz"]:checked');
+      if (selectedAnswer) {
+        quizAnswer = parseInt(selectedAnswer.value);
+        const isCorrect = quizAnswer === 1; // La bonne réponse est "Sharable Content Object Reference Model"
+        
+        if (isCorrect) {
+          updateScore(95);
+          debugLog(`✅ Quiz réussi! Score: 95/100`);
+        } else {
+          updateScore(70);
+          debugLog(`❌ Quiz échoué. Score: 70/100`);
+        }
+      }
+    }
+
+    // Gestionnaires d'événements
+    elements.initBtn.onclick = async () => {
+      if (!API) {
+        alert('❌ API SCORM non disponible! Vérifiez que cette page est chargée dans un LMS.');
+        debugLog('❌ Erreur: API SCORM non trouvée');
+        return;
+      }
+
+      try {
+        const initResult = API.LMSInitialize('');
+        debugLog(`🚀 LMSInitialize: ${initResult}`);
+        
+        if (initResult === 'true') {
+          isInitialized = true;
+          startTime = Date.now();
+          
+          updateStatus('En cours');
+          updateScore(0);
+          showStep(1);
+          
+          elements.initBtn.disabled = true;
+          
+          // Démarrer le timer
+          setInterval(updateTimer, 1000);
+          
+          debugLog('✅ Module initialisé avec succès');
+        } else {
+          throw new Error('Échec de l\'initialisation');
+        }
+      } catch (error) {
+        debugLog(`❌ Erreur d'initialisation: ${error.message}`);
+        alert('❌ Erreur lors de l\'initialisation du module');
+      }
     };
+
+    elements.prevBtn.onclick = () => {
+      if (currentStep > 0) {
+        showStep(currentStep - 1);
+        debugLog(`⬅️ Étape précédente: ${currentStep}`);
+      }
+    };
+
+    elements.nextBtn.onclick = () => {
+      if (currentStep < 4) {
+        // Vérifier le quiz à l'étape 3
+        if (currentStep === 3) {
+          checkQuizAnswer();
+        }
+        
+        showStep(currentStep + 1);
+        debugLog(`➡️ Étape suivante: ${currentStep}`);
+      }
+    };
+
+    elements.completeBtn.onclick = async () => {
+      if (!isInitialized) return;
+      
+      try {
+        // Finaliser le score si le quiz n'a pas été fait
+        if (quizAnswer === null) {
+          updateScore(80); // Score par défaut si quiz non fait
+        }
+        
+        const finalStatus = score >= 80 ? 'Réussi' : 'Échoué';
+        updateStatus(finalStatus);
+        
+        // Commit final
+        const commitResult = await API.LMSCommit('');
+        debugLog(`💾 LMSCommit final: ${commitResult}`);
+        
+        // Finalisation
+        const finishResult = API.LMSFinish('');
+        debugLog(`🏁 LMSFinish: ${finishResult}`);
+        
+        if (commitResult === 'true' && finishResult === 'true') {
+          alert(`🎉 Module terminé avec succès!\nScore final: ${score}/100\nStatut: ${finalStatus}`);
+          debugLog('✅ Module finalisé avec succès');
+          
+          // Désactiver tous les boutons
+          elements.prevBtn.disabled = true;
+          elements.nextBtn.disabled = true;
+          elements.completeBtn.disabled = true;
+        } else {
+          throw new Error('Échec de la finalisation');
+        }
+      } catch (error) {
+        debugLog(`❌ Erreur de finalisation: ${error.message}`);
+        alert('❌ Erreur lors de la finalisation du module');
+      }
+    };
+
+    // Initialisation de l'interface
+    debugLog('🔧 Interface initialisée - Prêt à commencer');
+    updateButtons();
+    
+    // Auto-commit périodique (toutes les 30 secondes)
+    setInterval(() => {
+      if (isInitialized && API && API.LMSCommit) {
+        API.LMSCommit('');
+        debugLog('💾 Auto-commit effectué');
+      }
+    }, 30000);
   </script>
 </body>
 </html>
