@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Attestation de réalisation</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #111; }
+    .wrap { width: 720px; margin: 0 auto; padding: 24px; border: 1px solid #ddd; }
+    h1 { text-align: center; font-size: 22px; margin-bottom: 12px; }
+    h2 { font-size: 16px; margin: 16px 0 8px; }
+    p { font-size: 13px; line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .muted { color: #666; font-size: 12px; }
+    footer { margin-top: 24px; display: flex; justify-content: space-between; align-items: center; }
+    .qr { width: 96px; height: 96px; }
+    .box { border: 1px dashed #aaa; padding: 10px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Attestation de réalisation</h1>
+    <p>Nous certifions que :</p>
+    <div class="box">
+      <strong><%= user.firstName || "" %> <%= user.lastName || "" %></strong><br/>
+      Email : <%= user.email %>
+    </div>
+
+    <h2>Détails de la formation</h2>
+    <div class="grid">
+      <div><strong>Intitulé</strong><br/><%= training.title %></div>
+      <div><strong>RNCP</strong><br/><%= training.rncpCode || "—" %></div>
+      <div><strong>Session</strong><br/><%= session.title %></div>
+      <div><strong>Période</strong><br/>
+        <%= session.startDate ? new Date(session.startDate).toLocaleDateString('fr-FR') : '—' %>
+        —
+        <%= session.endDate ? new Date(session.endDate).toLocaleDateString('fr-FR') : '—' %>
+      </div>
+      <div><strong>Durée prévue</strong><br/><%= training.durationHours || "—" %> h</div>
+      <div><strong>Progression constatée</strong><br/><%= progressPct %>%</div>
+    </div>
+
+    <p class="muted">Émise le <%= today %>. Ce document comprend une empreinte cryptographique (SHA-256) et un QR pour vérification.</p>
+
+    <footer>
+      <div class="muted">Empreinte (SHA-256) : <code><%= hash %></code></div>
+      <img class="qr" src="<%= qr %>" alt="QR" />
+    </footer>
+  </div>
+</body>
+</html>

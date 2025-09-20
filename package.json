@@ -1,0 +1,19 @@
+{
+  "name": "cipfaro-elearning",
+  "private": true,
+  "packageManager": "pnpm@9.6.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "start": "pnpm -r start",
+    "lint": "echo 'lint TODO'",
+    "db:push": "pnpm --filter @cipfaro/api prisma db push",
+    "db:migrate": "pnpm --filter @cipfaro/api prisma migrate deploy",
+    "db:seed": "pnpm --filter @cipfaro/api prisma db seed"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "infra/*"
+  ]
+}

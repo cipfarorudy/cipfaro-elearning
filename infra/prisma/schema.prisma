@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  phone        String?
+  isActive     Boolean  @default(true)
+  roles        UserRole[]
+  enrollments  Enrollment[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  code String @unique // ADMIN | FORMATEUR | STAGIAIRE | OPCO
+  users UserRole[]
+}
+
+model UserRole {
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId Int
+  @@id([userId, roleId])
+}
+
+model Training {
+  id             String   @id @default(uuid())
+  title          String
+  rncpCode       String?
+  blocCode       String?
+  objectives     String?
+  prerequisites  String?
+  durationHours  Int
+  modality       Modality
+  sessions       Session[]
+  createdAt      DateTime @default(now())
+}
+
+enum Modality {
+  presentiel
+  distanciel
+  mixte
+}
+
+model Session {
+  id          String    @id @default(uuid())
+  training    Training  @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  trainingId  String
+  title       String
+  startDate   DateTime?
+  endDate     DateTime?
+  hoursPerDay Int?
+  location    String?
+  capacity    Int?
+  modules     Module[]
+  enrollments Enrollment[]
+  createdAt   DateTime  @default(now())
+}
+
+model Enrollment {
+  id        String  @id @default(uuid())
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  status    Status  @default(active)
+  cmi       ScormCmi[]
+  attendance Attendance[]
+  xapi      XapiStatement[]
+  createdAt DateTime @default(now())
+}
+
+enum Status {
+  pending
+  active
+  completed
+  abandoned
+}
+
+model Module {
+  id             String   @id @default(uuid())
+  session        Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId      String
+  title          String
+  type           ModuleType
+  orderIndex     Int      @default(0)
+  expectedMinutes Int?
+  scorm          ScormPackage?
+}
+
+enum ModuleType {
+  SCORM
+  VIDEO
+  H5P
+  QUIZ
+  DOC
+}
+
+model ScormPackage {
+  id         String  @id @default(uuid())
+  module     Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId   String  @unique
+  s3Key      String
+  launchUrl  String
+  scoId      String?
+  version    String  @default("1.2")
+  importedAt DateTime @default(now())
+}
+
+model ScormCmi {
+  id                     String   @id @default(uuid())
+  enrollment Enrollment  @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  module     Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId   String
+  lessonStatus  String?
+  scoreRaw      Float?
+  totalTime     String? // HH:MM:SS
+  suspendData   String?
+  lastCommit    DateTime @default(now())
+  @@unique([enrollmentId, moduleId])
+}
+
+model Attendance {
+  id           String   @id @default(uuid())
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  date         DateTime
+  startTime    DateTime
+  endTime      DateTime
+  method       AttendanceMethod @default(signature)
+  evidenceUrl  String?
+}
+
+enum AttendanceMethod {
+  signature
+  otp
+  webhook
+  biometrie
+}
+
+model XapiStatement {
+  id           String   @id @default(uuid())
+  actor        Json
+  verb         Json
+  object       Json
+  result       Json?
+  context      Json?
+  timestamp    DateTime @default(now())
+  stored       DateTime @default(now())
+  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id])
+  enrollmentId String?
+}
+
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  event        String
+  user         User?    @relation(fields: [userId], references: [id])
+  userId       String?
+  session      Session? @relation(fields: [sessionId], references: [id])
+  sessionId    String?
+  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id])
+  enrollmentId String?
+  module       Module?  @relation(fields: [moduleId], references: [id])
+  moduleId     String?
+  ip           String?
+  meta         Json?
+  createdAt    DateTime @default(now())
+}

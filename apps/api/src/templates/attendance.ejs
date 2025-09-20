@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Feuilles de présence — <%= session.title %></title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #111; }
+    h1 { font-size: 18px; margin: 0 0 6px; }
+    h2 { font-size: 14px; margin: 12px 0 6px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 6px 8px; }
+    th { background: #f3f3f3; text-align: left; }
+    footer { margin-top: 12px; font-size: 10px; color: #555; display: flex; align-items: center; gap: 12px; }
+    .meta { margin-bottom: 8px; font-size: 12px; }
+    .qr { width: 80px; height: 80px; }
+  </style>
+</head>
+<body>
+  <h1>Feuilles de présence</h1>
+  <div class="meta">
+    <strong>Formation :</strong> <%= session.training.title %><br/>
+    <strong>Session :</strong> <%= session.title %>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th><th>Début</th><th>Fin</th><th>Stagiaire</th><th>Email</th><th>Méthode</th><th>Preuve</th><th>Enrollment</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% rows.forEach(r => { %>
+      <tr>
+        <td><%= r.date %></td>
+        <td><%= r.start %></td>
+        <td><%= r.end %></td>
+        <td><%= r.learner %></td>
+        <td><%= r.email %></td>
+        <td><%= r.method %></td>
+        <td><%= r.evidenceUrl %></td>
+        <td><%= r.enrollmentId %></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+
+  <footer>
+    <div>Empreinte (SHA-256) : <code><%= hash %></code></div>
+    <img class="qr" src="<%= qr %>" alt="QR" />
+  </footer>
+</body>
+</html>

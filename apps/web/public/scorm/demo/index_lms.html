@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"><title>SCORM Demo</title></head>
+<body>
+  <h1>SCORM Demo</h1>
+  <button id="start">Initialize</button>
+  <button id="complete">Complete + Commit</button>
+  <script>
+    const API = window.parent.API || window.API;
+    document.getElementById('start').onclick = () => {
+      console.log('LMSInitialize:', API.LMSInitialize(''));
+      API.LMSSetValue('cmi.core.lesson_status', 'incomplete');
+      API.LMSSetValue('cmi.core.score.raw', '50');
+      API.LMSSetValue('cmi.core.total_time', '00:10:00');
+      alert('Initialized');
+    };
+    document.getElementById('complete').onclick = async () => {
+      API.LMSSetValue('cmi.core.lesson_status', 'completed');
+      API.LMSSetValue('cmi.core.score.raw', '85');
+      API.LMSSetValue('cmi.core.total_time', '00:30:00');
+      console.log('LMSCommit:', await API.LMSCommit(''));
+      alert('Committed');
+    };
+  </script>
+</body>
+</html>
