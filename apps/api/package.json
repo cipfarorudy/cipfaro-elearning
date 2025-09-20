@@ -6,9 +6,9 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
-    "prisma": "prisma",
-    "prisma:generate": "prisma generate",
-    "db:push": "prisma db push",
+    "prisma": "prisma --schema=../../infra/prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema=../../infra/prisma/schema.prisma",
+    "db:push": "prisma db push --schema=../../infra/prisma/schema.prisma",
     "db:seed": "tsx ../../infra/prisma/seed.ts"
   },
   "dependencies": {
