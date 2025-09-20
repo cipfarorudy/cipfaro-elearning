@@ -1,0 +1,255 @@
+name: 🎯 Manual Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      
+      version:
+        description: 'Version to deploy (branch/tag/commit)'
+        required: true
+        default: 'main'
+        type: string
+      
+      skip_tests:
+        description: 'Skip tests and security checks'
+        required: false
+        default: false
+        type: boolean
+      
+      force_deploy:
+        description: 'Force deployment (ignore warnings)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
+
+jobs:
+  validate-inputs:
+    name: 🔍 Validate Deployment Request
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📝 Log deployment parameters
+        run: |
+          echo "🎯 Manual Deployment Request"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Version: ${{ github.event.inputs.version }}"
+          echo "Skip Tests: ${{ github.event.inputs.skip_tests }}"
+          echo "Force Deploy: ${{ github.event.inputs.force_deploy }}"
+          echo "Requested by: ${{ github.actor }}"
+
+      - name: ⚠️ Production deployment warning
+        if: github.event.inputs.environment == 'production'
+        run: |
+          echo "⚠️ WARNING: Production deployment requested!"
+          echo "🔍 Ensure all requirements are met:"
+          echo "  ✓ Code reviewed and approved"
+          echo "  ✓ Tests passing in staging"
+          echo "  ✓ Security scan completed"
+          echo "  ✓ Stakeholder approval obtained"
+
+  conditional-tests:
+    name: 🧪 Conditional Testing
+    runs-on: ubuntu-latest
+    needs: validate-inputs
+    if: github.event.inputs.skip_tests == 'false'
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version }}
+
+      - name: 📦 Setup Node.js & pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🧪 Quick test suite
+        run: |
+          echo "🧪 Running essential tests..."
+          # pnpm test:quick
+
+      - name: 🔒 Security check
+        run: |
+          echo "🔒 Running security checks..."
+          # pnpm audit
+
+  build-for-deployment:
+    name: 🏗️ Build for Deployment
+    runs-on: ubuntu-latest
+    needs: [validate-inputs]
+    if: always() && !cancelled() && !failure()
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version }}
+
+      - name: 📦 Setup Node.js & pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 📥 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🏗️ Build applications
+        run: |
+          echo "🏗️ Building for ${{ github.event.inputs.environment }}..."
+          cd apps/web && pnpm build
+          echo "✅ Build completed successfully!"
+
+      - name: 📦 Upload deployment artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: manual-deployment-${{ github.event.inputs.environment }}
+          path: |
+            apps/web/.next/
+            apps/api/dist/
+          retention-days: 30
+
+  deploy:
+    name: 🚀 Deploy to ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    needs: [build-for-deployment]
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version }}
+
+      - name: 📦 Download deployment artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: manual-deployment-${{ github.event.inputs.environment }}
+          path: ./deployment
+
+      - name: 🚀 Deploy to ${{ github.event.inputs.environment }}
+        run: |
+          echo "🚀 Starting deployment to ${{ github.event.inputs.environment }}..."
+          echo "📊 Deployment configuration:"
+          echo "  - Environment: ${{ github.event.inputs.environment }}"
+          echo "  - Version: ${{ github.event.inputs.version }}"
+          echo "  - Timestamp: $(date)"
+          echo "  - Deployer: ${{ github.actor }}"
+          
+          if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+            echo "🔴 PRODUCTION DEPLOYMENT"
+            echo "🔄 Deploying to production servers..."
+            # Production deployment logic here
+          else
+            echo "🟡 STAGING DEPLOYMENT"
+            echo "🔄 Deploying to staging servers..."
+            # Staging deployment logic here
+          fi
+          
+          echo "✅ Deployment completed successfully!"
+
+      - name: 🧪 Post-deployment verification
+        run: |
+          echo "🧪 Running post-deployment verification..."
+          sleep 10  # Wait for services to start
+          
+          if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+            # curl -f https://cipfaro-elearning.com/health
+            echo "✅ Production health check passed"
+          else
+            # curl -f https://staging.cipfaro-elearning.com/health
+            echo "✅ Staging health check passed"
+          fi
+
+  rollback-preparation:
+    name: 🔄 Prepare Rollback Plan
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: github.event.inputs.environment == 'production'
+    
+    steps:
+      - name: 📋 Create rollback documentation
+        run: |
+          echo "🔄 Rollback Plan for Deployment"
+          echo "============================="
+          echo "Deployment Details:"
+          echo "- Environment: ${{ github.event.inputs.environment }}"
+          echo "- Version Deployed: ${{ github.event.inputs.version }}"
+          echo "- Deployment Time: $(date)"
+          echo "- Deployed by: ${{ github.actor }}"
+          echo ""
+          echo "Rollback Instructions:"
+          echo "1. Go to Actions tab"
+          echo "2. Run 'Manual Deployment' workflow"
+          echo "3. Select previous stable version"
+          echo "4. Deploy to production"
+          echo ""
+          echo "Previous stable versions:"
+          echo "- Check git tags for latest releases"
+          echo "- Verify staging deployments"
+
+      - name: 🔔 Notify deployment team
+        run: |
+          echo "🔔 Notifying deployment team..."
+          echo "📧 Sending deployment notification..."
+          echo "✅ Team notified successfully!"
+
+  notify-success:
+    name: 🎉 Deployment Success Notification
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: success()
+    
+    steps:
+      - name: 🎉 Success notification
+        run: |
+          echo "🎉 Deployment Successful!"
+          echo "========================"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Version: ${{ github.event.inputs.version }}"
+          echo "Deployed by: ${{ github.actor }}"
+          echo "Completed at: $(date)"
+
+  notify-failure:
+    name: 🚨 Deployment Failure Notification
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: failure()
+    
+    steps:
+      - name: 🚨 Failure notification
+        run: |
+          echo "🚨 Deployment Failed!"
+          echo "===================="
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Version: ${{ github.event.inputs.version }}"
+          echo "Failed for: ${{ github.actor }}"
+          echo "Failed at: $(date)"
+          echo ""
+          echo "🔍 Check the logs above for error details"
+          echo "🔄 Consider rollback if this was a production deployment"

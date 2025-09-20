@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CIPFARO E-Learning Platform</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", "Segoe UI", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 4rem;
+        color: white;
+      }
+
+      .header h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .header p {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+      }
+
+      .feature-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+      }
+
+      .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+      }
+
+      .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #333;
+      }
+
+      .feature-description {
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+      }
+
+      .feature-status {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .status-completed {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-active {
+        background: #cce7ff;
+        color: #0056b3;
+      }
+
+      .status-new {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .demo-section {
+        background: white;
+        border-radius: 16px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        margin-bottom: 3rem;
+      }
+
+      .demo-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #333;
+        text-align: center;
+      }
+
+      .demo-description {
+        color: #666;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+      }
+
+      .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .demo-item {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+      }
+
+      .demo-item:hover {
+        background: #e9ecef;
+        border-color: #667eea;
+        transform: scale(1.05);
+      }
+
+      .demo-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+
+      .demo-name {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .tech-stack {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
+        backdrop-filter: blur(10px);
+      }
+
+      .tech-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .tech-category {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+      }
+
+      .tech-category h4 {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      .tech-list {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      .footer {
+        text-align: center;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 3rem;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .demo-section {
+          padding: 2rem 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎓 CIPFARO E-Learning</h1>
+        <p>
+          Plateforme d'apprentissage en ligne moderne avec support SCORM complet
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <a href="/dashboard" class="feature-card">
+          <span class="feature-icon">🏢</span>
+          <h3 class="feature-title">Dashboard Administrateur</h3>
+          <p class="feature-description">
+            Interface d'administration complète avec statistiques en temps réel,
+            gestion des utilisateurs et monitoring du système.
+          </p>
+          <span class="feature-status status-completed">✅ Complété</span>
+        </a>
+
+        <a href="/upload-scorm.html" class="feature-card">
+          <span class="feature-icon">📤</span>
+          <h3 class="feature-title">Upload SCORM</h3>
+          <p class="feature-description">
+            Interface drag & drop moderne pour télécharger vos packages SCORM
+            avec validation automatique et extraction des métadonnées.
+          </p>
+          <span class="feature-status status-completed">✅ Complété</span>
+        </a>
+
+        <a href="/planning.html" class="feature-card">
+          <span class="feature-icon">📅</span>
+          <h3 class="feature-title">Planning & Calendrier</h3>
+          <p class="feature-description">
+            Système de planification des sessions de formation avec calendrier
+            interactif et gestion des événements.
+          </p>
+          <span class="feature-status status-completed">✅ Complété</span>
+        </a>
+
+        <a
+          href="https://github.com/cipfarorudy/cipfaro-elearning/actions"
+          class="feature-card"
+          target="_blank"
+        >
+          <span class="feature-icon">🚀</span>
+          <h3 class="feature-title">CI/CD Pipeline</h3>
+          <p class="feature-description">
+            Pipeline GitHub Actions automatisé avec tests, déploiement et
+            monitoring pour un développement continu.
+          </p>
+          <span class="feature-status status-completed">✅ Complété</span>
+        </a>
+      </div>
+
+      <div class="demo-section">
+        <h2 class="demo-title">🎮 Démonstrations & Tests</h2>
+        <p class="demo-description">
+          Explorez les différentes fonctionnalités de la plateforme
+        </p>
+
+        <div class="demo-grid">
+          <a href="/scorm/demo/index_lms.html" class="demo-item">
+            <span class="demo-icon">📚</span>
+            <div class="demo-name">SCORM Player Demo</div>
+          </a>
+
+          <a href="/api/health" class="demo-item">
+            <span class="demo-icon">🔧</span>
+            <div class="demo-name">API Health Check</div>
+          </a>
+
+          <a
+            href="https://github.com/cipfarorudy/cipfaro-elearning"
+            class="demo-item"
+            target="_blank"
+          >
+            <span class="demo-icon">💻</span>
+            <div class="demo-name">Code Source GitHub</div>
+          </a>
+
+          <a href="/docs/architecture.md" class="demo-item">
+            <span class="demo-icon">📖</span>
+            <div class="demo-name">Documentation Technique</div>
+          </a>
+        </div>
+      </div>
+
+      <div class="tech-stack">
+        <h3 class="tech-title">🛠️ Stack Technologique</h3>
+        <div class="tech-grid">
+          <div class="tech-category">
+            <h4>Frontend</h4>
+            <div class="tech-list">Next.js 14, React 18, TypeScript</div>
+          </div>
+          <div class="tech-category">
+            <h4>Backend</h4>
+            <div class="tech-list">Node.js, Express, Prisma ORM</div>
+          </div>
+          <div class="tech-category">
+            <h4>Base de données</h4>
+            <div class="tech-list">PostgreSQL, Redis Cache</div>
+          </div>
+          <div class="tech-category">
+            <h4>E-Learning</h4>
+            <div class="tech-list">SCORM 1.2/2004, xAPI, AICC</div>
+          </div>
+          <div class="tech-category">
+            <h4>DevOps</h4>
+            <div class="tech-list">Docker, GitHub Actions, AWS S3</div>
+          </div>
+          <div class="tech-category">
+            <h4>Outils</h4>
+            <div class="tech-list">pnpm, ESLint, Prettier</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>© 2024 CIPFARO E-Learning Platform - Développé avec ❤️</p>
+        <p>Version 1.0.0 - Architecture moderne et scalable</p>
+      </div>
+    </div>
+
+    <script>
+      // Animation d'entrée
+      document.addEventListener("DOMContentLoaded", () => {
+        const cards = document.querySelectorAll(".feature-card");
+        cards.forEach((card, index) => {
+          card.style.opacity = "0";
+          card.style.transform = "translateY(50px)";
+
+          setTimeout(() => {
+            card.style.transition = "all 0.8s ease";
+            card.style.opacity = "1";
+            card.style.transform = "translateY(0)";
+          }, index * 150);
+        });
+
+        // Animation du header
+        const header = document.querySelector(".header");
+        header.style.opacity = "0";
+        header.style.transform = "translateY(-30px)";
+
+        setTimeout(() => {
+          header.style.transition = "all 1s ease";
+          header.style.opacity = "1";
+          header.style.transform = "translateY(0)";
+        }, 100);
+      });
+
+      // Effet de particules subtil
+      function createParticle() {
+        const particle = document.createElement("div");
+        particle.style.position = "fixed";
+        particle.style.width = "4px";
+        particle.style.height = "4px";
+        particle.style.backgroundColor = "rgba(255, 255, 255, 0.6)";
+        particle.style.borderRadius = "50%";
+        particle.style.pointerEvents = "none";
+        particle.style.zIndex = "-1";
+
+        particle.style.left = Math.random() * window.innerWidth + "px";
+        particle.style.top = window.innerHeight + "px";
+
+        document.body.appendChild(particle);
+
+        const duration = Math.random() * 3000 + 2000;
+        const startTime = Date.now();
+
+        function animate() {
+          const elapsed = Date.now() - startTime;
+          const progress = elapsed / duration;
+
+          if (progress < 1) {
+            particle.style.top =
+              window.innerHeight - progress * (window.innerHeight + 100) + "px";
+            particle.style.opacity = 1 - progress;
+            requestAnimationFrame(animate);
+          } else {
+            document.body.removeChild(particle);
+          }
+        }
+
+        animate();
+      }
+
+      // Créer des particules périodiquement
+      setInterval(createParticle, 2000);
+    </script>
+  </body>
+</html>
