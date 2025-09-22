@@ -15,5 +15,8 @@
     "apps/*",
     "packages/*",
     "infra/*"
-  ]
+  ],
+  "devDependencies": {
+    "tsx": "^4.16.2"
+  }
 }

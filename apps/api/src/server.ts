@@ -3,6 +3,8 @@ import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
 import authRoutes from "./routes/auth";
+import authEnhancedRoutes from "./routes/auth-enhanced";
+import dashboardRoutes from "./routes/dashboard";
 import catalogRoutes from "./routes/catalog";
 import scormRoutes from "./routes/scorm";
 import xapiRoutes from "./routes/xapi";
@@ -21,6 +23,8 @@ export function createServer() {
   app.get("/health", (_req, res) => res.json({ ok: true }));
 
   app.use("/auth", authRoutes);
+  app.use("/auth/v2", authEnhancedRoutes); // Nouvelle API d'authentification
+  app.use("/dashboard", dashboardRoutes); // API dashboard avec authentification
   app.use("/catalog", catalogRoutes);
   app.use("/scorm", scormRoutes);
   app.use("/xapi", xapiRoutes);

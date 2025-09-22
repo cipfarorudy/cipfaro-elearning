@@ -1,0 +1,26 @@
+{
+  "name": "@cipfaro/infra",
+  "version": "1.0.0",
+  "description": "Infrastructure et schema de base de données",
+  "main": "index.js",
+  "scripts": {
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed-enhanced": "tsx prisma/seed-enhanced.ts",
+    "db:seed-simple": "tsx prisma/seed-simple.ts",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset --force"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.2",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "prisma": "^6.16.2",
+    "tsx": "^4.0.0"
+  }
+}
