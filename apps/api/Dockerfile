@@ -30,11 +30,11 @@ COPY . .
 WORKDIR /app/apps/api
 RUN pnpm build
 
-# Stage 4: Production runtime
+# Stage 4: Production runtime for DigitalOcean App Platform
 FROM node:18-alpine AS runtime
 
 # Install required packages
-RUN apk add --no-cache dumb-init curl
+RUN apk add --no-cache curl
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs
@@ -48,20 +48,19 @@ COPY --from=build --chown=api:nodejs /app/apps/api/package.json ./package.json
 COPY --from=build --chown=api:nodejs /app/infra/prisma ./prisma
 COPY --from=dependencies /app/apps/api/node_modules ./node_modules
 
-# Set up environment
+# Set up environment for DigitalOcean App Platform
 ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=8080
 
-# Expose port
-EXPOSE 3001
+# Expose port 8080 for DigitalOcean App Platform
+EXPOSE 8080
 
 # Switch to non-root user
 USER api
 
-# Health check
+# Health check endpoint for App Platform
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3001/health || exit 1
+  CMD curl -f http://localhost:8080/health || exit 1
 
-# Start the application
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/server.js"]
+# Start the application with database migration
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]

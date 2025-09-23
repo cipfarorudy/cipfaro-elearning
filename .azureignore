@@ -1,0 +1,15 @@
+# Fichiers de configuration Azure
+.azure/
+!.azure/cipfaro-prod/.env
+
+# Clés et secrets temporaires
+*.pem
+*.key
+*.crt
+
+# Logs Azure
+*.azd.log
+
+# Configuration locale
+.env.local
+.env.production.local

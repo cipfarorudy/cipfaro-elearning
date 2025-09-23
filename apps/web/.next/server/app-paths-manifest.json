@@ -1,6 +1,8 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/admin/reports/page": "app/admin/reports/page.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/demos/scorm/page": "app/demos/scorm/page.js",
+  "/demos/api-health/page": "app/demos/api-health/page.js",
+  "/learn/[moduleId]/page": "app/learn/[moduleId]/page.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }

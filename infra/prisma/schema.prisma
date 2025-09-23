@@ -208,19 +208,3 @@ model AuditLog {
 
   @@map("audit_logs")
 }
-
-/// Déclenchement automatique :
-// Push sur main → Déploiement Production
-// Push sur develop → Déploiement Staging
-// Pull Request → Tests uniquement
-
-🧪 Tests complets :
-- Tests unitaires (Jest)
-- Tests d'intégration
-- Tests E2E (Playwright)
-- Scan de sécurité
-
-🎯 Contrôle manuel :
-- Choix de l'environnement
-- Sélection de version
-- Confirmation obligatoire

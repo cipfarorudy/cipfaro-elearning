@@ -30,11 +30,11 @@ COPY . .
 WORKDIR /app/apps/web
 RUN pnpm build
 
-# Stage 4: Production runtime
+# Stage 4: Production runtime for DigitalOcean App Platform
 FROM node:18-alpine AS runtime
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install curl for health checks
+RUN apk add --no-cache curl
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs
@@ -47,21 +47,20 @@ COPY --from=build --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=build --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 
-# Set up environment
+# Set up environment for DigitalOcean App Platform
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 
-# Expose port
-EXPOSE 3000
+# Expose port 8080 for DigitalOcean App Platform
+EXPOSE 8080
 
 # Switch to non-root user
 USER nextjs
 
-# Health check
+# Health check endpoint for App Platform
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
+  CMD curl -f http://localhost:8080/api/health || exit 1
 
 # Start the application
-ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "apps/web/server.js"]

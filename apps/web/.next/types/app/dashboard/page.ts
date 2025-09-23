@@ -1,4 +1,4 @@
-// File: D:\cipfaro-elearning\apps\web\app\dashboard\page.tsx
+// File: D:\Azure-bungalows\cipfaro-elearning\apps\web\app\dashboard\page.tsx
 import * as entry from '../../../../app/dashboard/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

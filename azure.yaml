@@ -1,0 +1,73 @@
+# azure.yaml configuration for Azure Developer CLI (azd)
+name: cipfaro-elearning
+metadata:
+  template: cipfaro-elearning@0.0.1-beta
+
+# Infrastructure definition
+infra:
+  provider: bicep
+  path: ./infra
+  module: main
+
+# Services mapping
+services:
+  web:
+    project: ./apps/web
+    language: ts
+    host: appservice
+    dist: .next
+    docker:
+      path: ./apps/web/Dockerfile
+      context: .
+  api:
+    project: ./apps/api
+    language: ts
+    host: appservice
+    docker:
+      path: ./apps/api/Dockerfile
+      context: .
+
+# Hooks for deployment
+hooks:
+  # Install dependencies before building
+  prebuild:
+    shell: pwsh
+    run: |
+      Write-Host "Installing dependencies..."
+      pnpm install
+  
+  # Build applications
+  predeploy:
+    shell: pwsh
+    run: |
+      Write-Host "Building web application..."
+      cd apps/web
+      pnpm build
+      cd ../..
+      
+      Write-Host "Building API application..."
+      cd apps/api
+      pnpm build
+      cd ../..
+  
+  # Post-deployment setup
+  postdeploy:
+    shell: pwsh
+    run: |
+      Write-Host "Running post-deployment setup..."
+      Write-Host "✅ Database migrations will be handled by Prisma in the API startup"
+      Write-Host "✅ Production deployment completed successfully!"
+      Write-Host ""
+      Write-Host "Next steps:"
+      Write-Host "1. Configure custom domain cipfaro.fr in Azure Portal"
+      Write-Host "2. Update DNS CNAME records to point to Azure Web App"
+      Write-Host "3. Update database password in Key Vault"
+      Write-Host "4. Test all functionality"
+
+# Pipeline configuration
+pipeline:
+  provider: github
+  variables:
+    - AZURE_ENV_NAME
+    - AZURE_LOCATION
+    - AZURE_SUBSCRIPTION_ID
