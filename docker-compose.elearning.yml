@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # Nginx reverse proxy pour le sous-domaine
+  nginx:
+    image: nginx:alpine
+    container_name: elearning_nginx
+    ports:
+      - "3001:80"  # Port différent pour éviter conflits avec WordPress
+    volumes:
+      - ./nginx/elearning.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./public/elearning:/usr/share/nginx/html/elearning:ro
+    depends_on:
+      - web
+      - api
+    networks:
+      - elearning_network
+    restart: unless-stopped
+
+  # Application Next.js
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: elearning_web
+    environment:
+      - NEXT_PUBLIC_API_URL=https://elearning.cipfaro.fr/api
+      - NEXT_PUBLIC_DOMAIN=elearning.cipfaro.fr
+    volumes:
+      - ./public/elearning:/app/public/elearning
+    networks:
+      - elearning_network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+
+  # API Express.js
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: elearning_api
+    environment:
+      - DATABASE_URL=postgresql://elearning_user:${POSTGRES_PASSWORD}@postgres:5432/elearning_cipfaro
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379
+      - CORS_ORIGIN=https://elearning.cipfaro.fr
+      - UPLOAD_DIR=/app/uploads/elearning
+    volumes:
+      - ./uploads/elearning:/app/uploads/elearning
+      - ./public/elearning/scorm:/app/public/elearning/scorm
+    networks:
+      - elearning_network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: elearning_postgres
+    environment:
+      - POSTGRES_DB=elearning_cipfaro
+      - POSTGRES_USER=elearning_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=fr_FR.UTF-8 --lc-ctype=fr_FR.UTF-8
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups/elearning:/backups
+    networks:
+      - elearning_network
+    restart: unless-stopped
+    ports:
+      - "5433:5432"  # Port différent pour éviter conflits
+
+  # Redis pour cache et sessions
+  redis:
+    image: redis:7-alpine
+    container_name: elearning_redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-elearning123}
+    volumes:
+      - redis_data:/data
+    networks:
+      - elearning_network
+    restart: unless-stopped
+    ports:
+      - "6380:6379"  # Port différent pour éviter conflits
+
+volumes:
+  postgres_data:
+    name: elearning_postgres_data
+  redis_data:
+    name: elearning_redis_data
+
+networks:
+  elearning_network:
+    name: elearning_network
+    driver: bridge

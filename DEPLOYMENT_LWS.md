@@ -1,69 +1,136 @@
-# 🇫🇷 Guide de Déploiement LWS - CIPFARO E-Learning
+# 🇫🇷 Guide de Déploiement LWS - CIPFARO E-Learning (Sous-domaine)
 
-Ce guide détaille le processus de déploiement de la plateforme CIPFARO E-Learning sur LWS (Ligne Web Services).
+Ce guide détaille le déploiement de la plateforme CIPFARO E-Learning sur le sous-domaine `elearning.cipfaro.fr` chez LWS, en préservant le site WordPress existant sur `cipfaro.fr`.
 
-## 🎯 Pourquoi LWS ?
+## 🎯 Stratégie de Déploiement
 
-✅ **Hébergeur français** : Conformité RGPD native et support en français  
-✅ **Prix imbattable** : ~23€/mois (vs 56$/mois DigitalOcean, 200€/mois Azure)  
-✅ **Performance** : Datacenters en France, latence optimale  
-✅ **Simplicité** : Interface française intuitive  
-✅ **Sécurité** : Sauvegardes automatiques et monitoring 24/7  
+**🔄 Coexistence Harmonieuse :**
+- `cipfaro.fr` → Site WordPress existant (formations professionnelles)
+- `elearning.cipfaro.fr` → Nouvelle plateforme Next.js (modules interactifs)
 
-## 📋 Prérequis
-
-### Comptes Requis
-- [Compte LWS](https://www.lws.fr/) avec VPS Cloud
-- Repository GitHub `cipfarorudy/cipfaro-elearning`
-- Domaine cipfaro.fr (peut être acheté chez LWS)
-
-### Services LWS Recommandés
-- **VPS Cloud 2** : 2 vCPU, 4GB RAM, 80GB SSD - 19,99€/mois
-- **Domaine .fr** : 8,99€/an (première année gratuite)
-- **Backup Pro** : 2,99€/mois (optionnel mais recommandé)
+Cette approche permet de :
+✅ **Préserver** le site WordPress avec ses formations existantes  
+✅ **Déployer** la nouvelle plateforme sans conflit  
+✅ **Intégrer** progressivement les deux écosystèmes  
+✅ **Maintenir** le SEO et le trafic existant  
 
 ## 🏗️ Architecture de Déploiement
 
 ```
-🌐 cipfaro.fr
+🌐 cipfaro.fr (WordPress existant)
     ↓
-🔒 Let's Encrypt SSL
+🔒 SSL existant
     ↓
-🖥️ VPS Cloud LWS (Ubuntu 22.04)
-    ├── 🐳 Docker Compose
-    │   ├── 🔄 Nginx Reverse Proxy
-    │   ├── 📱 Next.js Frontend
-    │   ├── 📡 Express.js API
-    │   ├── 🗄️ PostgreSQL 15
-    │   └── 🚀 Redis (sessions)
-    └── 🛡️ Monitoring + Backups
+🖥️ VPS Cloud LWS (193.37.145.82)
+    ├── 🌐 Apache/Nginx
+    │   ├── cipfaro.fr → WordPress (existant)
+    │   └── elearning.cipfaro.fr → Docker Next.js
+    └── 🐳 Docker Compose (nouveau)
+        ├── 🔄 Nginx Reverse Proxy (port 3001)
+        ├── 📱 Next.js Frontend
+        ├── 📡 Express.js API
+        ├── 🗄️ PostgreSQL 15
+        └── 🚀 Redis (sessions)
 ```
 
-## 🚀 Déploiement Rapide (Option Automatique)
+## 🚀 Configuration du Sous-domaine (Étapes Simplifiées)
 
-### 1. Commander votre VPS LWS
+**🎯 Objectif :** Déployer sur `elearning.cipfaro.fr` sans affecter le WordPress existant
 
-1. **Allez sur** [LWS VPS Cloud](https://www.lws.fr/serveur_dedie_linux.php)
-2. **Choisissez** VPS Cloud 2 (2 vCPU, 4GB RAM, 80GB SSD)
-3. **OS** : Ubuntu 22.04 LTS
-4. **Commandez** et attendez l'activation (quelques minutes)
-
-### 2. Configuration Initiale du VPS
+### 1. Connexion au VPS LWS Existant
 
 ```bash
-# Connexion SSH (remplacez l'IP par celle de votre VPS)
-ssh root@VOTRE_IP_VPS
+# Connexion SSH au VPS (IP connue: 193.37.145.82)
+ssh root@193.37.145.82
 
-# Mise à jour du système
-apt update && apt upgrade -y
-
-# Création d'un utilisateur non-root
-adduser cipfaro
-usermod -aG sudo cipfaro
-su - cipfaro
+# Vérification de l'état actuel
+systemctl status apache2 || systemctl status nginx
+ps aux | grep -E "(apache|nginx|httpd)"
+ls -la /var/www/
 ```
 
-### 3. Déploiement Automatique
+### 2. Configuration du Virtual Host
+
+#### Si Apache est utilisé :
+
+```bash
+# Création du virtual host pour le sous-domaine
+sudo nano /etc/apache2/sites-available/elearning.cipfaro.fr.conf
+```
+
+Contenu du fichier :
+```apache
+<VirtualHost *:80>
+    ServerName elearning.cipfaro.fr
+    ProxyPreserveHost On
+    ProxyPass / http://localhost:3001/
+    ProxyPassReverse / http://localhost:3001/
+    
+    ErrorLog ${APACHE_LOG_DIR}/elearning_error.log
+    CustomLog ${APACHE_LOG_DIR}/elearning_access.log combined
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName elearning.cipfaro.fr
+    
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/cipfaro.fr/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/cipfaro.fr/privkey.pem
+    
+    ProxyPreserveHost On
+    ProxyPass / http://localhost:3001/
+    ProxyPassReverse / http://localhost:3001/
+    
+    ErrorLog ${APACHE_LOG_DIR}/elearning_ssl_error.log
+    CustomLog ${APACHE_LOG_DIR}/elearning_ssl_access.log combined
+</VirtualHost>
+```
+
+```bash
+# Activation du site et des modules
+sudo a2enmod proxy proxy_http ssl
+sudo a2ensite elearning.cipfaro.fr.conf
+sudo systemctl reload apache2
+```
+
+#### Si Nginx est utilisé :
+
+```bash
+# Création du virtual host pour le sous-domaine
+sudo nano /etc/nginx/sites-available/elearning.cipfaro.fr
+```
+
+Contenu du fichier :
+```nginx
+server {
+    listen 80;
+    server_name elearning.cipfaro.fr;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name elearning.cipfaro.fr;
+    
+    ssl_certificate /etc/letsencrypt/live/cipfaro.fr/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/cipfaro.fr/privkey.pem;
+    
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+# Activation du site
+sudo ln -s /etc/nginx/sites-available/elearning.cipfaro.fr /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
 
 ```bash
 # Téléchargement du script de déploiement
