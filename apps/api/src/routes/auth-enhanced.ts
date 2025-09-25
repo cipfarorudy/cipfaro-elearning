@@ -92,7 +92,7 @@ router.post("/login", async (req, res) => {
 router.post("/register", authRequired, async (req: AuthRequest, res) => {
   try {
     // Seuls les admins peuvent créer des comptes
-    if (req.user?.role !== "ADMIN") {
+    if (!req.user?.roles.includes("ADMIN")) {
       return res.status(403).json({
         success: false,
         error: "Seuls les administrateurs peuvent créer des comptes",
@@ -127,8 +127,16 @@ router.post("/register", authRequired, async (req: AuthRequest, res) => {
         password: hashedPassword,
         firstName,
         lastName,
-        role,
         isActive: true,
+        roles: {
+          create: {
+            role: {
+              connect: {
+                code: role,
+              },
+            },
+          },
+        },
       },
       select: {
         id: true,
@@ -251,10 +259,18 @@ router.get("/me", authRequired, async (req: AuthRequest, res) => {
         email: true,
         firstName: true,
         lastName: true,
-        role: true,
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        roles: {
+          select: {
+            role: {
+              select: {
+                code: true,
+              },
+            },
+          },
+        },
       },
     });
 

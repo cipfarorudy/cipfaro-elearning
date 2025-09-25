@@ -6,7 +6,7 @@ import { prisma } from "./prisma";
 export type JwtUser = {
   id: string;
   email: string;
-  role: string;
+  roles: string[];
   firstName?: string;
   lastName?: string;
 };
@@ -120,12 +120,12 @@ export function requireRole(...roles: string[]) {
       });
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!roles.some((role) => req.user.roles.includes(role))) {
       return res.status(403).json({
         error: `Accès refusé. Rôles requis: ${roles.join(", ")}`,
         code: "INSUFFICIENT_PERMISSIONS",
         requiredRoles: roles,
-        userRole: req.user.role,
+        userRoles: req.user.roles,
       });
     }
 
@@ -144,7 +144,7 @@ export function requireOwnerOrAdmin(userIdField: string = "userId") {
     }
 
     // Admin a accès à tout
-    if (req.user.role === "ADMIN") {
+    if (req.user.roles.includes("ADMIN")) {
       return next();
     }
 
@@ -189,7 +189,12 @@ export async function authenticateUser(email: string, password: string) {
     const userPayload: JwtUser = {
       id: user.id,
       email: user.email,
-      role: user.role,
+      roles: await prisma.userRole
+        .findMany({
+          where: { userId: user.id },
+          select: { role: { select: { code: true } } },
+        })
+        .then((roles) => roles.map((r) => r.role.code)),
       firstName: user.firstName || undefined,
       lastName: user.lastName || undefined,
     };
@@ -255,7 +260,12 @@ export async function refreshAccessToken(refreshToken: string) {
     const userPayload: JwtUser = {
       id: storedToken.user.id,
       email: storedToken.user.email,
-      role: storedToken.user.role,
+      roles: await prisma.userRole
+        .findMany({
+          where: { userId: storedToken.user.id },
+          select: { role: { select: { code: true } } },
+        })
+        .then((roles: any[]) => roles.map((r) => r.role.code)),
       firstName: storedToken.user.firstName || undefined,
       lastName: storedToken.user.lastName || undefined,
     };
