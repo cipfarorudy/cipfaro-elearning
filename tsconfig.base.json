@@ -9,7 +9,7 @@
     "resolveJsonModule": true,
     "strict": true,
     "noEmit": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "baseUrl": "."
   }
 }

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 
 export default function Reports() {
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const [token, setToken] = useState("");
   const [sessions, setSessions] = useState<any[]>([]);
   const [sessionId, setSessionId] = useState("");
@@ -10,13 +11,13 @@ export default function Reports() {
 
   useEffect(() => {
     setToken(localStorage.getItem("token") || "");
-    fetch("http://localhost:3001/catalog/sessions").then(r=>r.json()).then(setSessions);
-  }, []);
+    fetch(`${API}/catalog/sessions`).then(r=>r.json()).then(setSessions);
+  }, [API]);
 
-  const csvUrl = `http://localhost:3001/reports/attendance.csv?sessionId=${encodeURIComponent(sessionId || "")}`;
-  const pdfUrl = `http://localhost:3001/reports/attendance.pdf?sessionId=${encodeURIComponent(sessionId || "")}`;
-  const zipUrl = `http://localhost:3001/reports/attestations.zip?sessionId=${encodeURIComponent(sessionId || "")}`;
-  const auditUrl = `http://localhost:3001/reports/audit.csv?sessionId=${encodeURIComponent(sessionId || "")}${from?`&from=${encodeURIComponent(from)}`:""}${to?`&to=${encodeURIComponent(to)}`:""}`;
+  const csvUrl = `${API}/reports/attendance.csv?sessionId=${encodeURIComponent(sessionId || "")}`;
+  const pdfUrl = `${API}/reports/attendance.pdf?sessionId=${encodeURIComponent(sessionId || "")}`;
+  const zipUrl = `${API}/reports/attestations.zip?sessionId=${encodeURIComponent(sessionId || "")}`;
+  const auditUrl = `${API}/reports/audit.csv?sessionId=${encodeURIComponent(sessionId || "")}${from?`&from=${encodeURIComponent(from)}`:""}${to?`&to=${encodeURIComponent(to)}`:""}`;
 
   return (
     <main style={{ padding: 24 }}>

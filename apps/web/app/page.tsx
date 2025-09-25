@@ -2,6 +2,8 @@
 // Single-file landing page for "CIPFARO E‑Learning" — TailwindCSS, framer-motion, lucide-react
 // Drop this into your Next.js app at app/page.tsx and ensure Tailwind is configured.
 
+"use client";
+
 import { ArrowRight, BookOpen, Users2, CheckCircle2, TrendingUp, ShieldCheck, LayoutDashboard, UploadCloud, CalendarDays, GitBranch, Cog, Server } from "lucide-react";
 import { motion } from "framer-motion";
 

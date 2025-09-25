@@ -2,7 +2,7 @@
 # Multi-stage build for optimized production image
 
 # Stage 1: Base Node.js image with pnpm
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 RUN corepack enable pnpm
 WORKDIR /app
 
@@ -31,10 +31,10 @@ WORKDIR /app/apps/web
 RUN pnpm build
 
 # Stage 4: Production runtime
-FROM node:18-alpine AS runtime
+FROM node:20-alpine AS runtime
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init and curl for proper signal handling and health checks
+RUN apk add --no-cache dumb-init curl
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs
@@ -59,8 +59,8 @@ EXPOSE 3000
 USER nextjs
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:3000/ || exit 1
 
 # Start the application
 ENTRYPOINT ["dumb-init", "--"]

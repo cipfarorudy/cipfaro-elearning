@@ -1,0 +1,5 @@
+test.beforeEach(async ({ page }) => {
+  // Optionnel: vérifier que l'application est accessible
+  // await page.goto("/");
+  // await expect(page).toHaveTitle(/CIPFARO/);
+});

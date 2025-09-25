@@ -1,0 +1,10 @@
+﻿[2025-09-22 12:57:48] [INFO] === DÃ‰BUT DU DÃ‰PLOIEMENT PRODUCTION CIPFARO E-LEARNING ===
+[2025-09-22 12:57:48] [INFO] Environnement: production
+[2025-09-22 12:57:48] [INFO] Fichier de configuration: .env.production
+[2025-09-22 12:57:48] [INFO] Fichier Docker Compose: docker-compose.production.yml
+[2025-09-22 12:57:48] [INFO] VÃ©rification des prÃ©requis...
+[2025-09-22 12:57:48] [SUCCESS] Tous les prÃ©requis sont satisfaits
+[2025-09-22 12:57:48] [INFO] CrÃ©ation des rÃ©pertoires nÃ©cessaires...
+[2025-09-22 12:57:48] [SUCCESS] RÃ©pertoires crÃ©Ã©s avec succÃ¨s
+[2025-09-22 12:57:48] [INFO] Validation de la configuration...
+[2025-09-22 12:57:48] [ERROR] Variable d'environnement manquante: REDIS_PASSWORD

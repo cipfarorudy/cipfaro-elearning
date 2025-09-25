@@ -1,0 +1,78 @@
+# === Builder Stage ===
+FROM node:20-alpine AS builder
+
+# Configuration de l'environnement
+WORKDIR /app
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Installation de pnpm
+RUN npm install -g pnpm@latest
+
+# Copie des fichiers de configuration
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY apps/web/package.json apps/web/next.config.mjs ./apps/web/
+COPY packages/ ./packages/
+
+# Installation des dépendances
+RUN pnpm install --frozen-lockfile
+
+# Copie du code source
+COPY apps/web/ ./apps/web/
+
+# Build de l'application Next.js
+RUN pnpm --filter web build
+
+# === Runtime Stage ===
+FROM node:20-alpine AS runtime
+
+# Installation des dépendances système
+RUN apk add --no-cache \
+    curl \
+    tini \
+    && rm -rf /var/cache/apk/*
+
+# Création de l'utilisateur non-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S web -u 1001
+
+# Configuration de l'environnement
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+# Installation de pnpm
+RUN npm install -g pnpm@latest
+
+# Copie des fichiers de production
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/apps/web/package.json ./apps/web/
+COPY --from=builder /app/packages/ ./packages/
+
+# Installation des dépendances de production uniquement
+RUN pnpm install --prod --frozen-lockfile
+
+# Copie de l'application construite
+COPY --from=builder --chown=web:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=web:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=web:nodejs /app/apps/web/public ./apps/web/public
+
+# Configuration des permissions
+RUN chown -R web:nodejs /app
+
+# Changement vers l'utilisateur non-root
+USER web
+
+# Configuration du port
+EXPOSE 3000
+
+# Configuration de santé
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:3000 || exit 1
+
+# Point d'entrée avec tini
+ENTRYPOINT ["tini", "--"]
+CMD ["node", "apps/web/server.js"]

@@ -1,0 +1,106 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - heading "🏢 Dashboard Administrateur CIPFARO" [level=1] [ref=e7]
+          - paragraph [ref=e8]: Vue d'ensemble de la plateforme e-learning
+        - generic [ref=e9]:
+          - generic [ref=e10]: Admin CIPFARO
+          - button "Déconnexion" [ref=e11] [cursor=pointer]
+          - generic [ref=e12]: A
+    - main [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - paragraph [ref=e18]: Utilisateurs actifs
+            - paragraph [ref=e19]: 1,247
+          - generic [ref=e21]: 👥
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - paragraph [ref=e25]: Sessions en cours
+            - paragraph [ref=e26]: "23"
+          - generic [ref=e28]: 📚
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - paragraph [ref=e32]: Modules SCORM
+            - paragraph [ref=e33]: "156"
+          - generic [ref=e35]: 📦
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - paragraph [ref=e39]: Taux de completion
+            - paragraph [ref=e40]: 87%
+          - generic [ref=e42]: ✅
+      - generic [ref=e43]:
+        - heading "Actions rapides" [level=2] [ref=e44]
+        - generic [ref=e45]:
+          - link "➕ Créer une session Nouvelle session de formation" [ref=e46] [cursor=pointer]:
+            - /url: /admin/sessions/new
+            - generic [ref=e47] [cursor=pointer]:
+              - generic [ref=e48] [cursor=pointer]: ➕
+              - generic [ref=e49] [cursor=pointer]:
+                - heading "Créer une session" [level=3] [ref=e50] [cursor=pointer]
+                - paragraph [ref=e51] [cursor=pointer]: Nouvelle session de formation
+          - link "📤 Upload SCORM Ajouter un module" [ref=e52] [cursor=pointer]:
+            - /url: /admin/modules/upload
+            - generic [ref=e53] [cursor=pointer]:
+              - generic [ref=e54] [cursor=pointer]: 📤
+              - generic [ref=e55] [cursor=pointer]:
+                - heading "Upload SCORM" [level=3] [ref=e56] [cursor=pointer]
+                - paragraph [ref=e57] [cursor=pointer]: Ajouter un module
+          - link "👥 Gérer utilisateurs Comptes et permissions" [ref=e58] [cursor=pointer]:
+            - /url: /admin/users
+            - generic [ref=e59] [cursor=pointer]:
+              - generic [ref=e60] [cursor=pointer]: 👥
+              - generic [ref=e61] [cursor=pointer]:
+                - heading "Gérer utilisateurs" [level=3] [ref=e62] [cursor=pointer]
+                - paragraph [ref=e63] [cursor=pointer]: Comptes et permissions
+          - link "📊 Rapports Analytics et exports" [ref=e64] [cursor=pointer]:
+            - /url: /admin/reports
+            - generic [ref=e65] [cursor=pointer]:
+              - generic [ref=e66] [cursor=pointer]: 📊
+              - generic [ref=e67] [cursor=pointer]:
+                - heading "Rapports" [level=3] [ref=e68] [cursor=pointer]
+                - paragraph [ref=e69] [cursor=pointer]: Analytics et exports
+      - generic [ref=e70]:
+        - generic [ref=e71]:
+          - heading "Activité récente" [level=3] [ref=e73]
+          - generic [ref=e75]:
+            - generic [ref=e78]:
+              - paragraph [ref=e79]:
+                - strong [ref=e80]: Jean Dupont
+                - text: a terminé le module "Sécurité au travail"
+              - paragraph [ref=e81]: Il y a 5 min
+            - generic [ref=e84]:
+              - paragraph [ref=e85]:
+                - strong [ref=e86]: Marie Martin
+                - text: s'est inscrite à la formation "Management"
+              - paragraph [ref=e87]: Il y a 12 min
+            - generic [ref=e90]:
+              - paragraph [ref=e91]:
+                - strong [ref=e92]: Admin
+                - text: a uploadé un nouveau module SCORM
+              - paragraph [ref=e93]: Il y a 1h
+            - generic [ref=e96]:
+              - paragraph [ref=e97]:
+                - strong [ref=e98]: Pierre Durand
+                - text: a émargé pour la session du matin
+              - paragraph [ref=e99]: Il y a 2h
+        - generic [ref=e100]:
+          - heading "État du système" [level=3] [ref=e102]
+          - generic [ref=e104]:
+            - generic [ref=e105]:
+              - generic [ref=e106]: API
+              - generic [ref=e109]: Opérationnel
+            - generic [ref=e110]:
+              - generic [ref=e111]: Base de données
+              - generic [ref=e114]: Opérationnel
+            - generic [ref=e115]:
+              - generic [ref=e116]: Stockage S3
+              - generic [ref=e119]: Opérationnel
+            - paragraph [ref=e121]: 💡 Tous les services fonctionnent normalement
+  - alert [ref=e122]
+```

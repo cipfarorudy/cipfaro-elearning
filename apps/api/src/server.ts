@@ -12,16 +12,27 @@ import attendanceRoutes from "./routes/attendance";
 import reportsRoutes from "./routes/reports";
 import modulesRoutes from "./routes/modules";
 import scormImportRoutes from "./routes/scorm-import";
+import { metricsMiddleware, metricsHandler } from "./lib/metrics";
 
 export function createServer() {
   const app = express();
+
+  // Middleware de base
   app.use(helmet());
   app.use(cors({ origin: process.env.CORS_ORIGIN || true, credentials: true }));
   app.use(express.json({ limit: "2mb" }));
   app.use(morgan("dev"));
 
+  // Middleware pour les métriques Prometheus
+  app.use(metricsMiddleware);
+
+  // Health check
   app.get("/health", (_req, res) => res.json({ ok: true }));
 
+  // Endpoint pour les métriques Prometheus
+  app.get("/metrics", metricsHandler);
+
+  // Routes de l'API
   app.use("/auth", authRoutes);
   app.use("/auth/v2", authEnhancedRoutes); // Nouvelle API d'authentification
   app.use("/dashboard", dashboardRoutes); // API dashboard avec authentification

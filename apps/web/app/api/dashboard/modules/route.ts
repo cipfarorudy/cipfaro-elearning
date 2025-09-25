@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      `${process.env.API_URL || "http://localhost:3001"}/dashboard/modules`,
+      `${process.env.API_URL || "http://localhost:10002"}/dashboard/modules`,
       {
         method: "GET",
         headers: {

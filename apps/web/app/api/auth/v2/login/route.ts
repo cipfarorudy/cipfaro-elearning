@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const response = await fetch(
-      `${process.env.API_URL || "http://localhost:3001"}/auth/v2/login`,
+      `${process.env.API_URL || "http://localhost:4000"}/auth/v2/login`,
       {
         method: "POST",
         headers: {

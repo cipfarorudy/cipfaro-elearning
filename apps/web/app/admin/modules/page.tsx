@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 
 export default function AdminModules() {
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const [token, setToken] = useState("");
   const [sessions, setSessions] = useState<any[]>([]);
   const [modules, setModules] = useState<any[]>([]);
@@ -9,12 +10,12 @@ export default function AdminModules() {
 
   useEffect(() => {
     setToken(localStorage.getItem("token") || "");
-    fetch("http://localhost:3001/catalog/sessions").then(r=>r.json()).then(setSessions);
-  }, []);
+    fetch(`${API}/catalog/sessions`).then(r=>r.json()).then(setSessions);
+  }, [API]);
 
   async function refreshModules(sid: string) {
     if (!sid) return;
-    const r = await fetch(`http://localhost:3001/modules?sessionId=${sid}`, {
+    const r = await fetch(`${API}/modules?sessionId=${sid}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (r.ok) setModules(await r.json());
@@ -24,7 +25,7 @@ export default function AdminModules() {
 
   async function createModule() {
     const body = { sessionId, title: "SCORM Démo", type: "SCORM", orderIndex: 1 };
-    const r = await fetch("http://localhost:3001/modules", {
+    const r = await fetch(`${API}/modules`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(body)
@@ -40,7 +41,7 @@ export default function AdminModules() {
   async function uploadZip(moduleId: string, file: File) {
     const fd = new FormData();
     fd.append("package", file);
-    const r = await fetch(`http://localhost:3001/scorm/import/${moduleId}`, {
+    const r = await fetch(`${API}/scorm/import/${moduleId}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: fd

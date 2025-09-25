@@ -2,7 +2,7 @@
 # Multi-stage build for optimized production image
 
 # Stage 1: Base Node.js image with pnpm
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 RUN corepack enable pnpm
 WORKDIR /app
 
@@ -26,12 +26,15 @@ COPY --from=dependencies /app/infra/node_modules ./infra/node_modules
 # Copy source code
 COPY . .
 
-# Build the API application
+# Generate Prisma client
 WORKDIR /app/apps/api
+RUN pnpm prisma:generate
+
+# Build the API application
 RUN pnpm build
 
 # Stage 4: Production runtime
-FROM node:18-alpine AS runtime
+FROM node:20-alpine AS runtime
 
 # Install required packages
 RUN apk add --no-cache dumb-init curl
@@ -50,18 +53,18 @@ COPY --from=dependencies /app/apps/api/node_modules ./node_modules
 
 # Set up environment
 ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=4000
 
 # Expose port
-EXPOSE 3001
+EXPOSE 4000
 
 # Switch to non-root user
 USER api
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3001/health || exit 1
+  CMD curl -f http://localhost:4000/health || exit 1
 
 # Start the application
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/index.js"]

@@ -1,0 +1,75 @@
+# === Builder Stage ===
+FROM node:20-alpine AS builder
+
+# Configuration de l'environnement
+WORKDIR /app
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+# Installation de pnpm
+RUN npm install -g pnpm@latest
+
+# Copie des fichiers de configuration
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY apps/api/package.json ./apps/api/
+COPY packages/ ./packages/
+
+# Installation des dépendances
+RUN pnpm install --frozen-lockfile
+
+# Copie du code source
+COPY apps/api/ ./apps/api/
+
+# Build de l'application
+RUN pnpm --filter api build
+
+# === Runtime Stage ===
+FROM node:20-alpine AS runtime
+
+# Installation des dépendances système
+RUN apk add --no-cache \
+    curl \
+    tini \
+    && rm -rf /var/cache/apk/*
+
+# Création de l'utilisateur non-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S api -u 1001
+
+# Configuration de l'environnement
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+# Installation de pnpm
+RUN npm install -g pnpm@latest
+
+# Copie des fichiers de production
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/apps/api/package.json ./apps/api/
+COPY --from=builder /app/packages/ ./packages/
+
+# Installation des dépendances de production uniquement
+RUN pnpm install --prod --frozen-lockfile
+
+# Copie de l'application construite
+COPY --from=builder --chown=api:nodejs /app/apps/api/dist ./apps/api/dist
+COPY --from=builder --chown=api:nodejs /app/apps/api/prisma ./apps/api/prisma
+
+# Configuration des permissions
+RUN mkdir -p /app/logs && chown -R api:nodejs /app
+
+# Changement vers l'utilisateur non-root
+USER api
+
+# Configuration du port
+EXPOSE 3001
+
+# Configuration de santé
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3001/health || exit 1
+
+# Point d'entrée avec tini
+ENTRYPOINT ["tini", "--"]
+CMD ["node", "apps/api/dist/index.js"]

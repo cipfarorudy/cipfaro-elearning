@@ -1,1 +1,9 @@
-{}
+{
+  "/dashboard/enhanced/page": "app/dashboard/enhanced/page.js",
+  "/api/dashboard/stats/route": "app/api/dashboard/stats/route.js",
+  "/api/dashboard/recent-activity/route": "app/api/dashboard/recent-activity/route.js",
+  "/page": "app/page.js",
+  "/api/dashboard/modules/route": "app/api/dashboard/modules/route.js",
+  "/login/v2/page": "app/login/v2/page.js",
+  "/api/auth/v2/login/route": "app/api/auth/v2/login/route.js"
+}

@@ -97,8 +97,8 @@ export default function EnhancedDashboard() {
 
       setUser(statsData.user);
       setStats(statsData.stats);
-      setActivities(activitiesData.activities);
-      setModules(modulesData.modules);
+      setActivities(activitiesData.activities || []);
+      setModules(modulesData.modules || []);
 
     } catch (err) {
       console.error('Erreur dashboard:', err);
@@ -334,7 +334,7 @@ export default function EnhancedDashboard() {
               Activité récente
             </h3>
             <div className="space-y-4">
-              {activities.length > 0 ? activities.map((activity) => (
+              {activities && activities.length > 0 ? activities.map((activity) => (
                 <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg">
                   <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                     <span className="text-blue-600 text-sm">📝</span>
@@ -360,7 +360,7 @@ export default function EnhancedDashboard() {
               {user?.role === 'FORMATEUR' ? 'Mes modules' : 'Modules'}
             </h3>
             <div className="space-y-4">
-              {modules.slice(0, 5).map((module) => (
+              {modules && modules.slice(0, 5).map((module) => (
                 <div key={module.id} className="border rounded-lg p-4 hover:bg-gray-50">
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="text-sm font-medium text-gray-900 line-clamp-1">
@@ -388,7 +388,7 @@ export default function EnhancedDashboard() {
                   )}
                 </div>
               ))}
-              {modules.length === 0 && (
+              {modules && modules.length === 0 && (
                 <p className="text-gray-500 text-sm">Aucun module disponible</p>
               )}
             </div>

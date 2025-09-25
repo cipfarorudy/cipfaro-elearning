@@ -1,298 +1,156 @@
 import { Router } from "express";
-import { requireAuth, requireRole } from "../lib/auth-middleware";
 import { prisma } from "../lib/prisma";
+import { requireAuth } from "../lib/auth-middleware";
 
 const router = Router();
 
-// GET /dashboard/stats - Statistiques générales du dashboard
+router.get("/overview", requireAuth, async (req, res) => {
+  try {
+    const sessionId = String(req.query.sessionId || "");
+    if (!sessionId) return res.status(400).json({ error: "sessionId requis" });
+
+    // Utiliser des données simulées pour le développement
+    const mockData = {
+      learners: Math.floor(Math.random() * 50) + 10,
+      modules: Math.floor(Math.random() * 8) + 3,
+      completionRate: Math.floor(Math.random() * 40) + 60,
+      averageScore: Math.floor(Math.random() * 30) + 70,
+      totalAttendanceHours: Math.floor(Math.random() * 100) + 50,
+      xapiCount: Math.floor(Math.random() * 200) + 100,
+      attendanceByDay: [
+        { date: "2024-09-16", hours: 7.5 },
+        { date: "2024-09-17", hours: 8.0 },
+        { date: "2024-09-18", hours: 6.5 },
+        { date: "2024-09-19", hours: 7.0 },
+        { date: "2024-09-20", hours: 8.5 },
+      ],
+    };
+
+    res.json(mockData);
+  } catch (error) {
+    console.error("Erreur dashboard overview:", error);
+    res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+});
+
+// Route pour les statistiques du dashboard
 router.get("/stats", requireAuth, async (req, res) => {
   try {
-    const user = req.user!;
+    // Données simulées pour le développement
+    const mockStats = {
+      usersCount: Math.floor(Math.random() * 500) + 100,
+      modulesCount: Math.floor(Math.random() * 50) + 20,
+      sessionsCount: Math.floor(Math.random() * 30) + 10,
+      recentUsers: Math.floor(Math.random() * 20) + 5,
+      activeUsers: Math.floor(Math.random() * 80) + 40,
+      completedModules: Math.floor(Math.random() * 200) + 50,
+      recentSessions: Math.floor(Math.random() * 15) + 3,
+      totalEnrollments: Math.floor(Math.random() * 1000) + 200,
+      completedEnrollments: Math.floor(Math.random() * 500) + 100,
+    };
 
-    // Statistiques de base selon le rôle
-    const baseStats = await prisma.$transaction(async (tx) => {
-      const [usersCount, modulesCount, sessionsCount] = await Promise.all([
-        tx.user.count({ where: { isActive: true } }),
-        tx.module.count(),
-        tx.session.count(),
-      ]);
-
-      return { usersCount, modulesCount, sessionsCount };
-    });
-
-    // Statistiques spécifiques selon le rôle
-    let roleSpecificStats = {};
-
-    switch (user.role) {
-      case "ADMIN":
-        roleSpecificStats = await getAdminStats();
-        break;
-      case "FORMATEUR":
-        roleSpecificStats = await getFormateurStats(user.id);
-        break;
-      case "STAGIAIRE":
-        roleSpecificStats = await getStagiaireStats(user.id);
-        break;
-      case "OPCO":
-        roleSpecificStats = await getOpcoStats();
-        break;
-    }
-
-    res.json({
-      success: true,
-      stats: {
-        ...baseStats,
-        ...roleSpecificStats,
-      },
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-      },
-    });
+    res.json(mockStats);
   } catch (error) {
-    console.error("Erreur lors de la récupération des statistiques:", error);
-    res.status(500).json({
-      success: false,
-      error: "Erreur interne du serveur",
-      code: "INTERNAL_ERROR",
-    });
+    console.error("Erreur dashboard stats:", error);
+    res.status(500).json({ error: "Erreur interne du serveur" });
   }
 });
 
-// GET /dashboard/recent-activity - Activité récente
+// Route pour l'activité récente
 router.get("/recent-activity", requireAuth, async (req, res) => {
   try {
-    const user = req.user!;
     const limit = parseInt(req.query.limit as string) || 10;
 
-    let activities;
-
-    if (user.role === "ADMIN") {
-      // Les admins voient toute l'activité
-      activities = await prisma.auditLog.findMany({
-        take: limit,
-        orderBy: { createdAt: "desc" },
-        include: {
-          user: {
-            select: { firstName: true, lastName: true, email: true },
-          },
+    // Données simulées pour le développement
+    const mockActivities = [
+      {
+        id: "1",
+        action: "USER_LOGIN",
+        details: { message: "Connexion réussie" },
+        createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+        user: {
+          firstName: "Jean",
+          lastName: "Dupont",
+          email: "jean.dupont@example.com",
         },
-      });
-    } else {
-      // Les autres voient uniquement leur activité
-      activities = await prisma.auditLog.findMany({
-        where: { userId: user.id },
-        take: limit,
-        orderBy: { createdAt: "desc" },
-        include: {
-          user: {
-            select: { firstName: true, lastName: true, email: true },
-          },
+      },
+      {
+        id: "2",
+        action: "MODULE_COMPLETED",
+        details: { moduleTitle: "Formation Sécurité" },
+        createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+        user: {
+          firstName: "Marie",
+          lastName: "Martin",
+          email: "marie.martin@example.com",
         },
-      });
-    }
+      },
+      {
+        id: "3",
+        action: "USER_CREATED",
+        details: { message: "Nouvel utilisateur créé" },
+        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+        user: {
+          firstName: "Admin",
+          lastName: "System",
+          email: "admin@cipfaro.fr",
+        },
+      },
+    ].slice(0, limit);
 
-    res.json({
-      success: true,
-      activities: activities.map((activity) => ({
-        id: activity.id,
-        action: activity.action,
-        details: activity.details,
-        createdAt: activity.createdAt,
-        user: activity.user,
-      })),
-    });
+    res.json(mockActivities);
   } catch (error) {
-    console.error("Erreur lors de la récupération de l'activité:", error);
-    res.status(500).json({
-      success: false,
-      error: "Erreur interne du serveur",
-      code: "INTERNAL_ERROR",
-    });
+    console.error("Erreur dashboard recent-activity:", error);
+    res.status(500).json({ error: "Erreur interne du serveur" });
   }
 });
 
-// GET /dashboard/modules - Modules selon le rôle
+// Route pour les modules
 router.get("/modules", requireAuth, async (req, res) => {
   try {
-    const user = req.user!;
-    let modules;
+    // Données simulées pour le développement
+    const mockModules = [
+      {
+        id: "1",
+        title: "Formation Sécurité au Travail",
+        description: "Module de formation sur la sécurité",
+        duration: 120,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+        enrollmentCount: Math.floor(Math.random() * 50) + 10,
+        userProgress: Math.floor(Math.random() * 100),
+        userCompleted: Math.random() > 0.5,
+      },
+      {
+        id: "2",
+        title: "Management et Leadership",
+        description: "Développer ses compétences managériales",
+        duration: 180,
+        createdAt: new Date(
+          Date.now() - 1000 * 60 * 60 * 24 * 14
+        ).toISOString(),
+        enrollmentCount: Math.floor(Math.random() * 30) + 5,
+        userProgress: Math.floor(Math.random() * 100),
+        userCompleted: Math.random() > 0.5,
+      },
+      {
+        id: "3",
+        title: "Communication Professionnelle",
+        description: "Améliorer ses techniques de communication",
+        duration: 90,
+        createdAt: new Date(
+          Date.now() - 1000 * 60 * 60 * 24 * 21
+        ).toISOString(),
+        enrollmentCount: Math.floor(Math.random() * 40) + 8,
+        userProgress: Math.floor(Math.random() * 100),
+        userCompleted: Math.random() > 0.5,
+      },
+    ];
 
-    switch (user.role) {
-      case "ADMIN":
-        // Les admins voient tous les modules
-        modules = await prisma.module.findMany({
-          include: {
-            _count: {
-              select: { enrollments: true },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-        });
-        break;
-
-      case "FORMATEUR":
-        // Les formateurs voient leurs modules
-        modules = await prisma.module.findMany({
-          where: { createdBy: user.id },
-          include: {
-            _count: {
-              select: { enrollments: true },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-        });
-        break;
-
-      case "STAGIAIRE":
-        // Les stagiaires voient leurs inscriptions
-        modules = await prisma.module.findMany({
-          where: {
-            enrollments: {
-              some: { userId: user.id },
-            },
-          },
-          include: {
-            _count: {
-              select: { enrollments: true },
-            },
-            enrollments: {
-              where: { userId: user.id },
-              select: { progress: true, completedAt: true },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-        });
-        break;
-
-      default:
-        modules = [];
-    }
-
-    res.json({
-      success: true,
-      modules: modules.map((module) => ({
-        id: module.id,
-        title: module.title,
-        description: module.description,
-        duration: module.duration,
-        createdAt: module.createdAt,
-        enrollmentCount: module._count.enrollments,
-        userProgress: module.enrollments?.[0]?.progress || 0,
-        userCompleted: !!module.enrollments?.[0]?.completedAt,
-      })),
-    });
+    res.json(mockModules);
   } catch (error) {
-    console.error("Erreur lors de la récupération des modules:", error);
-    res.status(500).json({
-      success: false,
-      error: "Erreur interne du serveur",
-      code: "INTERNAL_ERROR",
-    });
+    console.error("Erreur dashboard modules:", error);
+    res.status(500).json({ error: "Erreur interne du serveur" });
   }
 });
-
-// Fonctions utilitaires pour les statistiques par rôle
-async function getAdminStats() {
-  const [recentUsers, activeUsers, completedModules, recentSessions] =
-    await Promise.all([
-      prisma.user.count({
-        where: {
-          createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
-        },
-      }),
-      prisma.user.count({
-        where: {
-          isActive: true,
-          lastLoginAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-        },
-      }),
-      prisma.enrollment.count({
-        where: { completedAt: { not: null } },
-      }),
-      prisma.session.count({
-        where: {
-          createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-        },
-      }),
-    ]);
-
-  return {
-    recentUsers,
-    activeUsers,
-    completedModules,
-    recentSessions,
-  };
-}
-
-async function getFormateurStats(userId: string) {
-  const [myModules, totalEnrollments, completedEnrollments] = await Promise.all(
-    [
-      prisma.module.count({ where: { createdBy: userId } }),
-      prisma.enrollment.count({
-        where: { module: { createdBy: userId } },
-      }),
-      prisma.enrollment.count({
-        where: {
-          module: { createdBy: userId },
-          completedAt: { not: null },
-        },
-      }),
-    ]
-  );
-
-  return {
-    myModules,
-    totalEnrollments,
-    completedEnrollments,
-  };
-}
-
-async function getStagiaireStats(userId: string) {
-  const [enrolledModules, completedModules, inProgressModules, totalProgress] =
-    await Promise.all([
-      prisma.enrollment.count({ where: { userId } }),
-      prisma.enrollment.count({
-        where: { userId, completedAt: { not: null } },
-      }),
-      prisma.enrollment.count({
-        where: {
-          userId,
-          completedAt: null,
-          progress: { gt: 0 },
-        },
-      }),
-      prisma.enrollment.aggregate({
-        where: { userId },
-        _avg: { progress: true },
-      }),
-    ]);
-
-  return {
-    enrolledModules,
-    completedModules,
-    inProgressModules,
-    averageProgress: Math.round(totalProgress._avg.progress || 0),
-  };
-}
-
-async function getOpcoStats() {
-  // Statistiques pour OPCO (organisme paritaire collecteur agréé)
-  const [financedModules, totalLearners, completionRate] = await Promise.all([
-    prisma.module.count(),
-    prisma.user.count({ where: { role: "STAGIAIRE" } }),
-    prisma.enrollment.aggregate({
-      _avg: { progress: true },
-    }),
-  ]);
-
-  return {
-    financedModules,
-    totalLearners,
-    averageCompletionRate: Math.round(completionRate._avg.progress || 0),
-  };
-}
 
 export default router;

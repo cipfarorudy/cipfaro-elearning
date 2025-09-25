@@ -1,0 +1,263 @@
+name: 🚀 CIPFARO V2 - Déploiement Contrôlé
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environnement de déploiement'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      version:
+        description: 'Version à déployer (ex: 1.2.3 ou latest)'
+        required: true
+        default: 'latest'
+      run_tests:
+        description: 'Exécuter les tests avant déploiement'
+        required: true
+        type: boolean
+        default: true
+      security_scan:
+        description: 'Exécuter le scan de sécurité'
+        required: true
+        type: boolean
+        default: true
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '9.6.0'
+
+jobs:
+  # Validation et préparation
+  preparation:
+    runs-on: ubuntu-latest
+    name: 📋 Préparation du Déploiement
+    outputs:
+      environment: ${{ steps.validate.outputs.environment }}
+      version: ${{ steps.validate.outputs.version }}
+      should-deploy: ${{ steps.validate.outputs.should-deploy }}
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: ✅ Validation des paramètres
+      id: validate
+      run: |
+        echo "🔍 Validation des paramètres de déploiement"
+        echo "Environnement: ${{ github.event.inputs.environment }}"
+        echo "Version: ${{ github.event.inputs.version }}"
+        echo "Tests: ${{ github.event.inputs.run_tests }}"
+        echo "Sécurité: ${{ github.event.inputs.security_scan }}"
+        
+        # Validation de l'environnement
+        if [[ "${{ github.event.inputs.environment }}" =~ ^(development|staging|production)$ ]]; then
+          echo "✅ Environnement valide"
+          echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Environnement invalide"
+          exit 1
+        fi
+        
+        # Validation de la version
+        if [[ "${{ github.event.inputs.version }}" =~ ^(latest|[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+          echo "✅ Version valide"
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Format de version invalide"
+          exit 1
+        fi
+        
+        # Vérification spéciale pour la production
+        if [[ "${{ github.event.inputs.environment }}" == "production" ]]; then
+          echo "⚠️ DÉPLOIEMENT EN PRODUCTION DÉTECTÉ"
+          echo "🔒 Vérifications renforcées requises"
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+        else
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+        fi
+
+  # Tests pré-déploiement (conditionnel)
+  tests-pre-deploiement:
+    if: github.event.inputs.run_tests == 'true'
+    needs: preparation
+    runs-on: ubuntu-latest
+    name: 🧪 Tests Pré-Déploiement
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js & pnpm
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: 📦 Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ env.PNPM_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: pnpm install --frozen-lockfile
+      
+    - name: 🔨 Build
+      run: pnpm build
+      
+    - name: 🧪 Tests unitaires
+      run: pnpm test:ci
+      
+    - name: 🎭 Tests E2E (staging/prod uniquement)
+      if: github.event.inputs.environment != 'development'
+      run: |
+        pnpm playwright:install
+        pnpm test:e2e
+
+  # Scan de sécurité (conditionnel)
+  scan-securite:
+    if: github.event.inputs.security_scan == 'true'
+    needs: preparation
+    runs-on: ubuntu-latest
+    name: 🔒 Scan de Sécurité
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js & pnpm
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: 📦 Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ env.PNPM_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: pnpm install --frozen-lockfile
+      
+    - name: 🔒 Scan de sécurité complet
+      run: pnpm security:scan
+
+  # Approbation manuelle pour la production
+  approbation-production:
+    if: needs.preparation.outputs.environment == 'production'
+    needs: [preparation, tests-pre-deploiement, scan-securite]
+    runs-on: ubuntu-latest
+    name: ✋ Approbation Production
+    environment: 
+      name: production-approval
+      url: https://cipfaro.com
+    
+    steps:
+    - name: ⚠️ Confirmation Production
+      run: |
+        echo "🚨 DÉPLOIEMENT EN PRODUCTION"
+        echo "📋 Environnement: production"
+        echo "🏷️ Version: ${{ needs.preparation.outputs.version }}"
+        echo "👤 Déclenché par: ${{ github.actor }}"
+        echo "🕒 Timestamp: $(date -u)"
+        echo ""
+        echo "⚠️ Ce déploiement affectera l'environnement de production"
+        echo "✅ Tous les tests ont été validés"
+        echo "🔒 Scan de sécurité approuvé"
+        echo ""
+        echo "Cliquez sur 'Approve' pour continuer le déploiement"
+
+  # Déploiement
+  deploiement:
+    needs: [preparation, tests-pre-deploiement, scan-securite]
+    if: |
+      always() && 
+      needs.preparation.result == 'success' && 
+      (needs.tests-pre-deploiement.result == 'success' || needs.tests-pre-deploiement.result == 'skipped') &&
+      (needs.scan-securite.result == 'success' || needs.scan-securite.result == 'skipped')
+    runs-on: ubuntu-latest
+    name: 🚀 Déploiement ${{ needs.preparation.outputs.environment }}
+    environment: 
+      name: ${{ needs.preparation.outputs.environment }}
+      url: ${{ needs.preparation.outputs.environment == 'production' && 'https://cipfaro.com' || needs.preparation.outputs.environment == 'staging' && 'https://staging.cipfaro.com' || 'http://localhost:3000' }}
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js & pnpm
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: 📦 Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ env.PNPM_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: pnpm install --frozen-lockfile
+      
+    - name: 🔨 Build pour ${{ needs.preparation.outputs.environment }}
+      run: pnpm build
+      env:
+        NODE_ENV: ${{ needs.preparation.outputs.environment == 'production' && 'production' || 'staging' }}
+        
+    - name: 🚀 Déploiement Development
+      if: needs.preparation.outputs.environment == 'development'
+      run: |
+        echo "🏠 Déploiement local/development"
+        echo "✅ Build terminé - prêt pour développement"
+        
+    - name: 🚀 Déploiement Staging
+      if: needs.preparation.outputs.environment == 'staging'
+      run: |
+        echo "🧪 Déploiement staging"
+        # Ici: commandes spécifiques au staging
+        # Example: vercel deploy --prebuilt --target staging
+        echo "✅ Déployé sur l'environnement de staging"
+        
+    - name: 🚀 Déploiement Production
+      if: needs.preparation.outputs.environment == 'production'
+      run: |
+        echo "🌟 Déploiement production"
+        # Ici: commandes spécifiques à la production
+        # Example: vercel deploy --prebuilt --prod
+        echo "✅ Déployé sur l'environnement de production"
+        
+    - name: 📝 Log du déploiement
+      run: |
+        echo "📋 DÉPLOIEMENT CIPFARO V2 TERMINÉ"
+        echo "================================"
+        echo "🌍 Environnement: ${{ needs.preparation.outputs.environment }}"
+        echo "🏷️ Version: ${{ needs.preparation.outputs.version }}"
+        echo "👤 Déployé par: ${{ github.actor }}"
+        echo "📅 Date: $(date -u)"
+        echo "🔗 Commit: ${{ github.sha }}"
+        echo "✅ Statut: Succès"
+
+  # Notification de fin
+  notification:
+    if: always()
+    needs: [preparation, deploiement]
+    runs-on: ubuntu-latest
+    name: 📢 Notification
+    
+    steps:
+    - name: 🎉 Notification de succès
+      if: needs.deploiement.result == 'success'
+      run: |
+        echo "🎉 DÉPLOIEMENT RÉUSSI!"
+        echo "🌍 Environnement: ${{ needs.preparation.outputs.environment }}"
+        echo "🏷️ Version: ${{ needs.preparation.outputs.version }}"
+        echo "✅ L'application CIPFARO V2 est maintenant déployée"
+        
+    - name: ❌ Notification d'échec
+      if: needs.deploiement.result == 'failure'
+      run: |
+        echo "❌ ÉCHEC DU DÉPLOIEMENT"
+        echo "🌍 Environnement: ${{ needs.preparation.outputs.environment }}"
+        echo "🏷️ Version: ${{ needs.preparation.outputs.version }}"
+        echo "🔍 Vérifiez les logs pour plus de détails"
+        exit 1

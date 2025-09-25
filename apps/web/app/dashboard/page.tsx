@@ -1,3 +1,5 @@
+"use client";
+
 export default function AdminDashboard() {
   const stats = [
     { title: 'Utilisateurs actifs', value: '1,247', icon: '👥', color: '#2563eb' },
@@ -19,6 +21,11 @@ export default function AdminDashboard() {
     { title: 'Gérer utilisateurs', description: 'Comptes et permissions', icon: '👥', href: '/admin/users' },
     { title: 'Rapports', description: 'Analytics et exports', icon: '📊', href: '/admin/reports' },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+  };
 
   return (
     <div style={{ 
@@ -44,6 +51,21 @@ export default function AdminDashboard() {
             </div>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <span style={{ color: '#6b7280', fontSize: '14px' }}>Admin CIPFARO</span>
+              <button 
+                data-testid="logout-button"
+                onClick={handleLogout}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Déconnexion
+              </button>
               <div style={{
                 width: '40px',
                 height: '40px',

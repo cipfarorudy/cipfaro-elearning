@@ -1,0 +1,65 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "CIPFARO E-Learning" [level=2] [ref=e5]
+      - paragraph [ref=e6]: Plateforme de formation professionnelle
+    - generic [ref=e8]:
+      - generic [ref=e10]:
+        - generic [ref=e12]: ⚠️
+        - paragraph [ref=e14]: Erreur interne du serveur
+      - generic [ref=e15]:
+        - generic [ref=e16]: Adresse email
+        - textbox "Adresse email" [ref=e18]: admin@cipfaro.fr
+      - generic [ref=e19]:
+        - generic [ref=e20]: Mot de passe
+        - textbox "Mot de passe" [ref=e22]: admin123
+      - button "Se connecter" [ref=e24]
+    - generic [ref=e25]:
+      - heading "Comptes de démonstration" [level=3] [ref=e26]
+      - generic [ref=e27]:
+        - button "Administrateur admin@cipfaro.fr Utiliser →" [ref=e28]:
+          - generic [ref=e29]:
+            - generic [ref=e30]:
+              - paragraph [ref=e31]: Administrateur
+              - paragraph [ref=e32]: admin@cipfaro.fr
+            - generic [ref=e33]: Utiliser →
+        - button "Formateur formateur@cipfaro.fr Utiliser →" [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36]:
+              - paragraph [ref=e37]: Formateur
+              - paragraph [ref=e38]: formateur@cipfaro.fr
+            - generic [ref=e39]: Utiliser →
+        - button "Stagiaire stagiaire@cipfaro.fr Utiliser →" [ref=e40]:
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - paragraph [ref=e43]: Stagiaire
+              - paragraph [ref=e44]: stagiaire@cipfaro.fr
+            - generic [ref=e45]: Utiliser →
+        - button "OPCO opco@cipfaro.fr Utiliser →" [ref=e46]:
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - paragraph [ref=e49]: OPCO
+              - paragraph [ref=e50]: opco@cipfaro.fr
+            - generic [ref=e51]: Utiliser →
+      - paragraph [ref=e52]: Cliquez sur un compte pour remplir automatiquement les champs
+    - generic [ref=e53]:
+      - heading "Fonctionnalités disponibles" [level=3] [ref=e54]
+      - generic [ref=e55]:
+        - generic [ref=e56]:
+          - generic [ref=e57]: 📊
+          - paragraph [ref=e58]: Dashboard par rôle
+        - generic [ref=e59]:
+          - generic [ref=e60]: 📚
+          - paragraph [ref=e61]: Modules SCORM
+        - generic [ref=e62]:
+          - generic [ref=e63]: 📅
+          - paragraph [ref=e64]: Planning sessions
+        - generic [ref=e65]:
+          - generic [ref=e66]: 🔄
+          - paragraph [ref=e67]: CI/CD Pipeline
+    - paragraph [ref=e69]: CIPFARO E-Learning Platform © 2024
+  - alert [ref=e70]
+```
