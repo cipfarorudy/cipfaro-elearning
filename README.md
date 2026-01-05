@@ -13,6 +13,26 @@
 
 ---
 
+## 🆕 **Nouveau Projet: Mini-Aladdin M365**
+
+> 💼 **Plateforme de gestion de portefeuille et d'analyse de risque** inspirée d'Aladdin (BlackRock), construite sur Microsoft Power Platform.
+
+**🎯 Vision**: Démocratiser l'accès aux outils de gestion de portefeuille institutionnels pour PME, conseillers financiers et family offices.
+
+**📚 Documentation complète**: [docs/mini-aladdin/](./docs/mini-aladdin/)
+
+**Caractéristiques**:
+- ✅ Dashboard temps réel avec Power BI
+- ✅ Alertes automatiques intelligentes (concentration, drawdown, volatilité)
+- ✅ Métriques de risque avancées (VaR, Sharpe Ratio)
+- ✅ Rapports automatisés PDF/PowerPoint
+- ✅ Architecture low-code sur Microsoft 365
+- ✅ Tarification SaaS: 299€-2,999€/mois
+
+**🚀 Quick Start**: Suivez le [Guide Jour 1](./docs/mini-aladdin/JOUR-1-GUIDE-COMPLET.md) pour déployer le MVP en 4-6 heures.
+
+---
+
 ## ✨ **Nouvelles Fonctionnalités V2.0**
 
 ### 🔐 **Système d'Authentification JWT Professionnel**
@@ -261,10 +281,19 @@ cipfaro-elearning/
 
 ## 📚 **Documentation Complète**
 
+### E-Learning Platform
 - **[Guide de Démarrage](GUIDE-DEMARRAGE.md)** - Test en 5 minutes
 - **[Améliorations Détaillées](AMELIORATIONS.md)** - Fonctionnalités V2
 - **[Scripts Automatiques](scripts-demarrage.md)** - Démarrage automatisé
 - **[Architecture](docs/architecture.md)** - Documentation technique
+
+### Mini-Aladdin M365 (Nouveau)
+- **[📖 Documentation Complète](docs/mini-aladdin/)** - Index complet
+- **[🎯 Vision & Stratégie](docs/mini-aladdin/MINI-ALADDIN-VISION.md)** - Vue d'ensemble
+- **[📅 Guide Jour 1](docs/mini-aladdin/JOUR-1-GUIDE-COMPLET.md)** - Implémentation (4-6h)
+- **[💼 Modèle Business](docs/mini-aladdin/MODELE-BUSINESS.md)** - Tarification & revenus
+- **[🗓️ Roadmap 5 jours](docs/mini-aladdin/ROADMAP-5-JOURS.md)** - Planning détaillé
+- **[❓ FAQ](docs/mini-aladdin/FAQ.md)** - Questions fréquentes
 
 
 
