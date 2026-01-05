@@ -1,0 +1,11 @@
+Portefeuille,Ticker,Nom de l'Actif,Quantité,Prix d'Achat,Date d'Achat,Classe d'Actif,Secteur
+Portefeuille Croissance,AAPL,Apple Inc.,50,150.00,2024-01-15,Actions,Technologie
+Portefeuille Croissance,MSFT,Microsoft Corp.,30,380.00,2024-01-15,Actions,Technologie
+Portefeuille Croissance,GOOGL,Alphabet Inc.,25,140.00,2024-01-20,Actions,Technologie
+Portefeuille Croissance,BTC-USD,Bitcoin,0.5,45000.00,2024-02-01,Crypto-monnaies,Crypto
+Portefeuille Croissance,ETH-USD,Ethereum,5,2500.00,2024-02-01,Crypto-monnaies,Crypto
+Portefeuille Retraite,BND,Vanguard Bond ETF,100,75.00,2024-01-10,Obligations,Obligations
+Portefeuille Retraite,AAPL,Apple Inc.,20,145.00,2024-01-20,Actions,Technologie
+Portefeuille Retraite,VTI,Vanguard Total Stock,50,220.00,2024-01-15,Fonds (OPCVM),Diversifié
+Portefeuille Équilibré,SPY,SPDR S&P 500 ETF,40,450.00,2024-01-10,Fonds (OPCVM),Actions US
+Portefeuille Équilibré,GLD,SPDR Gold Shares,30,185.00,2024-01-25,Matières premières,Or
