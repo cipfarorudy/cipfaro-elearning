@@ -1,0 +1,6 @@
+Nom de la Règle,Portefeuille,Type d'Alerte,Ticker,Classe d'Actif,Valeur Seuil,Direction,Actif,Email de Notification
+Concentration AAPL,Portefeuille Croissance,Concentration Position,AAPL,,30,Au-dessus du seuil,Oui,admin@votredomaine.com
+Concentration Crypto,Portefeuille Croissance,Concentration Position,,Crypto-monnaies,25,Au-dessus du seuil,Oui,admin@votredomaine.com
+Drawdown Global Croissance,Portefeuille Croissance,Drawdown Portefeuille,,,10,Au-dessus du seuil,Oui,admin@votredomaine.com
+Drawdown Global Retraite,Portefeuille Retraite,Drawdown Portefeuille,,,5,Au-dessus du seuil,Oui,user@votredomaine.com
+Volatilité Excessive,Portefeuille Croissance,Volatilité Excessive,,,25,Au-dessus du seuil,Oui,admin@votredomaine.com
